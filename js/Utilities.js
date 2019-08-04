@@ -1,12 +1,4 @@
 
-export const SearchTabState = Object.freeze({
-	NONE: 0,
-	ON_NEW_WEBLINK_PAGE : 1,
-	ON_NEW_SEARCH_PAGE : 2,
-	ON_OLD_WEBLINK_PAGE: 3,
-	ON_OLD_SEARCH_PAGE: 4,
-});
-
 export default class Utilties {
 
 	static uuidv4() {
@@ -14,6 +6,28 @@ export default class Utilties {
 	    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 	    return v.toString(16);
 	  });
+	}
+
+
+	static randomInt(min, max, n) {
+		min = min || 0;
+		max = max || 1;
+
+		n = n || 1;
+
+		let output = [];
+
+		for (let ii = 0; ii < n; ii++) {
+			let val = (max-min) * Math.random() + min 
+			output.push(Math.floor(val));
+		}
+
+		if (n == 1) {
+			return output[0];
+		}
+		else {
+			return output;
+		}
 	}
 }
 
