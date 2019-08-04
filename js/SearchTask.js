@@ -11,7 +11,7 @@ export default class SearchTask {
 
 
 	addSearchTree(searchTreeUUID) {
-		this.searchTrees.push(searchTreeUUID);
+		return this.searchTrees.push(searchTreeUUID);
 	}
 
 	removeSearchTree(searchTreeUUID) {
@@ -26,33 +26,37 @@ export default class SearchTask {
 	}
 
 	exists(searchTreeUUID) {
-		return searchTreeUUID in this.searchTrees;
+		return this.searchTrees.includes(searchTreeUUID);
 	}
 
-	inQueue(searchTreeUUID) {
-		return searchTreeUUID in this.searchQueue;
+	queueSearchTree(searchTreeUUID) {
+		this.searchQueue.add(searchTreeUUID);
 	}
 
 	removeFromQueue(searchTreeUUID) {
-		let idx = this.searchQueue.indexOf(searchTreeUUID);
-		if (idx > -1) {
-			this.searchQueue.splice(idx, 1);
+		if (this.searchQueue.has(searchTreeUUID)) {
+			this.searchQueue.delete(searchTreeUUID);
 			return true;
-		} 
+		}
 		else {
 			return false;
 		}
 	}
 
-	dequeue(searchTreeUUID) {
+	dequeueSearchTree(searchTreeUUID) {
 		if (this.removeFromQueue(searchTreeUUID)) {
-			this.addWeblinkTree(searchTreeUUID);
+			this.addSearchTree(searchTreeUUID);
 			return true;
 		} 
 		else { 
 			return false;
 		}
 	}
+
+	isQueued(searchTreeUUID) {
+		return this.searchQueue.has(searchTreeUUID);
+	}
+
 
 	sync() {
 		console.warn("Test this");
