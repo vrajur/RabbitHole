@@ -24,7 +24,7 @@ export default class SearchTreeCollection  {
 	}
 
 	exists(searchTreeUUID) {
-		return searchTreeUUID in this.searchTrees;
+		return this.searchTrees.includes(searchTreeUUID);
 	}
 
 	sync() {

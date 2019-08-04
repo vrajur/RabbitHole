@@ -8,19 +8,8 @@ export default class SearchTabCollection {
 		this._UUID2chromeID = {};
 	}
 
-	chromeTabExists(chromeTabID) {
-		console.warn("Test this");
-		return chromeTabID in this._chromeID2UUID;
-	}
-
-	searchTabExists(searchTabUUID) {
-		console.warn("Test this");
-		return searchTabUUID in this._UUID2chromeID;
-	}
-
 	addSearchTab(chromeTabID, searchTabUUID) {
-		console.warn("Test this");
-		if (searchTabUUID in this._UUID2chromeID) {
+		if (searchTabUUID in this._UUID2chromeID || chromeTabID in this._chromeID2UUID) {
 			return false;
 		}
 		else {
@@ -30,17 +19,29 @@ export default class SearchTabCollection {
 		}
 	}
 
+	chromeTabExists(chromeTabID) {
+		return chromeTabID in this._chromeID2UUID;
+	}
+
+	searchTabExists(searchTabUUID) {
+		return searchTabUUID in this._UUID2chromeID;
+	}
+
 	removeSearchTab(chromeTabID) {
-		console.warn("Test this");
 		//TODO ERROR CHECK
 
-		let searchTabUUID = this._chromeID2UUID[chromeTabID];
-		delete this._chromeID2UUID[chromeTabID];
-		delete this._UUID2chromeID[searchTabUUID];
+		if (chromeTabID in this._chromeID2UUID) {
+			let searchTabUUID = this._chromeID2UUID[chromeTabID];
+			delete this._chromeID2UUID[chromeTabID];
+			delete this._UUID2chromeID[searchTabUUID];
+			return true;
+		} 
+		else {
+			return false;
+		}
 	}
 
 	getSearchTabUUID(chromeTabID) {
-		console.warn("Test this");
 		if (!this.chromeTabExists(chromeTabID)) {
 			return null;
 		}

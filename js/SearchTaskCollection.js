@@ -22,7 +22,7 @@ export default class SearchTaskCollection {
 	}
 
 	exists(searchTaskUUID) {
-		return searchTaskUUID in this.searchTasks;
+		return this.searchTasks.includes(searchTaskUUID);
 	}
 
 	sync() {

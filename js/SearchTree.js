@@ -6,7 +6,7 @@ export default class SearchTree {
 
 	constructor(queryString) {
 		this.UUID = Utilities.uuidv4();
-		this.queryString = queryString;
+		this.queryString = queryString || null;
 		this.weblinkTreeNodes = [];
 		this.weblinkQueue = [];
 		this.state = SearchTreeState.IN_PROGRESS_INACTIVE;
@@ -33,11 +33,7 @@ export default class SearchTree {
 	}
 
 	visited(weblinkTreeUUID) {
-		return weblinkTreeUUID in this.weblinkTreeNodes;
-	}
-
-	inQueue(weblinkTreeUUID) {
-		return weblinkTreeUUID in this.weblinkQueue;
+		return this.weblinkTreeNodes.includes(weblinkTreeUUID);
 	}
 
 	queueWeblinkTree(weblinkTreeUUID) {
@@ -63,6 +59,10 @@ export default class SearchTree {
 		else { 
 			return false;
 		}
+	}
+
+	isQueued(weblinkTreeUUID) {
+		return this.weblinkQueue.includes(weblinkTreeUUID);
 	}
 
 	sync() {
