@@ -13,6 +13,7 @@ describe("SearchTask Test Suite", function () {
 		expect(this.SearchTask.UUID).not.toBe(undefined);
 		expect(this.SearchTask.searchTrees.length).toBe(0);
 		expect(this.SearchTask.searchQueue.size).toBe(0);
+		expect(this.SearchTask.assignedTabs).toEqual([]);
 	});
 
 

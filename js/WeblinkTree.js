@@ -1,28 +1,28 @@
-import Utilites from "./Utitlies.js";
+import TreeNode from "./TreeNode.js";
 
-
-export default class WeblinkTree {
+export default class WeblinkTree extends TreeNode {
 
 	constructor(url) {
-		this.UUID = Utitlies.uuidv4();
-		this.url = url || null;
+		super({url: url});
 
-		this.prevWeblinkUUID = null;
-		this.nextWeblinkUUID = null;
-
-		this.weblinkTreeNodes = [];	
-
-		this.metadata = {
-			date: new Date(),
-			location: null
-		}
 		this.markups = {
 			isStarred: false,
 			highlights: null
 		}
 	}
 
+	toggleIsStarred() {
+		this.markups.isStarred = !this.markups.isStarred;
+		return this.markups.isStarred;
+	}
+
+	get isStarred() {
+		return this.markups.isStarred;
+	}
+
+	set isStarred(val) {
+		this.markups.isStarred = val;
+		return this.markups.isStarred;
+	}
 	
-
-
 }

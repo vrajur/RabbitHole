@@ -12,7 +12,6 @@ export default class TreeNode {
 		this.prevNode = prevNode;
 		this.nextNode = nextNode;
 
-
 		this.metadata = {
 			date: new Date(),
 			location: location

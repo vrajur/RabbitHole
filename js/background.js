@@ -7,21 +7,27 @@ import SearchTabCollection from "./SearchTabCollection.js";
 import SearchTask from "./SearchTask.js";
 import SearchTaskCollection from "./SearchTaskCollection.js";
 
+import BackgroundManager from "./BackgroundManager.js";
 
-
-let chromeTabID = 111;
-let searchTab = new SearchTab(chromeTabID);
-let searchTabCollection = new SearchTabCollection();
-
-searchTabCollection.addSearchTab(chromeTabID, searchTab.UUID);
-
-console.log('SearchTab: ', searchTab);
-console.log('SearchTabCollection: ', searchTabCollection);
+const Manager = new BackgroundManager();
 
 
 
-searchTab.sync();
-debugger;
+
+
+// let chromeTabID = 111;
+// let searchTab = new SearchTab(chromeTabID);
+// let searchTabCollection = new SearchTabCollection();
+
+// searchTabCollection.addSearchTab(chromeTabID, searchTab.UUID);
+
+// console.log('SearchTab: ', searchTab);
+// console.log('SearchTabCollection: ', searchTabCollection);
+
+
+
+// searchTab.sync();
+// debugger;
 
 
 

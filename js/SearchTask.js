@@ -1,12 +1,13 @@
-import Utilties from "./Utilities.js";
+import Utilities from "./Utilities.js";
 
 
 export default class SearchTask {
 
 	constructor() {
-		this.UUID = Utilties.uuidv4();
+		this.UUID = Utilities.uuidv4();
 		this.searchTrees = [];
 		this.searchQueue = new Set();
+		this.assignedTabs = [];
 	}
 
 

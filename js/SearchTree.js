@@ -7,11 +7,8 @@ export default class SearchTree extends TreeNode {
 
 	constructor(url, queryString = null) {
 		super({url: url});
-
-		this.UUID = Utilities.uuidv4();
 		this.queryString = queryString;
 		this.state = SearchTreeState.IN_PROGRESS_INACTIVE;
-		
 	}
 
 	addWeblinkTree(weblinkTreeUUID) {
