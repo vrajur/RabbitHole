@@ -12,12 +12,14 @@ describe("SearchTree Test Suite", function() {
 		this.weblinkUUID3 = Utilities.uuidv4();
 
 		this.queryString = "test query";
-		this.SearchTree = new SearchTree(this.queryString);
+		this.url = "https://example.com";
+		this.SearchTree = new SearchTree(this.url, this.queryString);
 	});
 
 	it("tests the constructor", function() {
 		expect(this.SearchTree).not.toBe(undefined);
 		expect(this.SearchTree.UUID.length).toBe(36);
+		expect(this.SearchTree.url).toEqual(this.url);
 		expect(this.SearchTree.queryString).toEqual(this.queryString);
 		expect(this.SearchTree.state).toBe(SearchTreeState.IN_PROGRESS_INACTIVE);
 
@@ -28,6 +30,7 @@ describe("SearchTree Test Suite", function() {
 		setTimeout(() => {
 			SearchTreeNull = new SearchTree();
 			expect(SearchTreeNull.queryString).toBe(null);
+			expect(SearchTreeNull.url).toBe(null);
 			expect(SearchTreeNull.metadata.date instanceof Date).toBe(true);
 			expect(this.SearchTree.metadata.date < SearchTreeNull.metadata.date).toBe(true);
 
@@ -40,7 +43,7 @@ describe("SearchTree Test Suite", function() {
 		expect(this.SearchTree.addWeblinkTree(this.weblinkUUID2)).toBe(2);
 		expect(this.SearchTree.addWeblinkTree(this.weblinkUUID3)).toBe(3);
 
-		expect(this.SearchTree.weblinkTreeNodes).toEqual([this.weblinkUUID1, this.weblinkUUID2, this.weblinkUUID3]);
+		expect(this.SearchTree.childNodes).toEqual([this.weblinkUUID1, this.weblinkUUID2, this.weblinkUUID3]);
 	});
 	
 	it("tests removeWeblinkTree", function() {
@@ -49,15 +52,15 @@ describe("SearchTree Test Suite", function() {
 		
 		// Try to remove invalid UUID:
 		expect(this.SearchTree.removeWeblinkTree(this.weblinkUUID3)).toBe(false);
-		expect(this.SearchTree.weblinkTreeNodes).toEqual([this.weblinkUUID1, this.weblinkUUID2]);
+		expect(this.SearchTree.childNodes).toEqual([this.weblinkUUID1, this.weblinkUUID2]);
 
 		// Try to remove valid UUID:
 		expect(this.SearchTree.removeWeblinkTree(this.weblinkUUID1)).toBe(true);
-		expect(this.SearchTree.weblinkTreeNodes).toEqual([this.weblinkUUID2]);
+		expect(this.SearchTree.childNodes).toEqual([this.weblinkUUID2]);
 
 		// Try to remove previously removed UUID:
 		expect(this.SearchTree.removeWeblinkTree(this.weblinkUUID1)).toBe(false);
-		expect(this.SearchTree.weblinkTreeNodes).toEqual([this.weblinkUUID2]);
+		expect(this.SearchTree.childNodes).toEqual([this.weblinkUUID2]);
 	});
 	
 	it("tests visited", function() {
@@ -77,7 +80,7 @@ describe("SearchTree Test Suite", function() {
 		expect(this.SearchTree.queueWeblinkTree(this.weblinkUUID2)).toBe(2);
 		expect(this.SearchTree.queueWeblinkTree(this.weblinkUUID3)).toBe(3);
 
-		expect(this.SearchTree.weblinkQueue).toEqual([this.weblinkUUID1, this.weblinkUUID2, this.weblinkUUID3]);
+		expect(this.SearchTree.childQueue).toEqual([this.weblinkUUID1, this.weblinkUUID2, this.weblinkUUID3]);
 	});
 	
 	it("tests removeFromQueue", function() {
@@ -86,15 +89,15 @@ describe("SearchTree Test Suite", function() {
 		
 		// Try to remove invalid UUID:
 		expect(this.SearchTree.removeFromQueue(this.weblinkUUID3)).toBe(false);
-		expect(this.SearchTree.weblinkQueue).toEqual([this.weblinkUUID1, this.weblinkUUID2]);
+		expect(this.SearchTree.childQueue).toEqual([this.weblinkUUID1, this.weblinkUUID2]);
 
 		// Try to remove valid UUID:
 		expect(this.SearchTree.removeFromQueue(this.weblinkUUID1)).toBe(true);
-		expect(this.SearchTree.weblinkQueue).toEqual([this.weblinkUUID2]);
+		expect(this.SearchTree.childQueue).toEqual([this.weblinkUUID2]);
 
 		// Try to remove previously removed UUID:
 		expect(this.SearchTree.removeFromQueue(this.weblinkUUID1)).toBe(false);
-		expect(this.SearchTree.weblinkQueue).toEqual([this.weblinkUUID2]);
+		expect(this.SearchTree.childQueue).toEqual([this.weblinkUUID2]);
 	});
 	
 	it("tests dequeueWeblinkTree", function() {
@@ -103,18 +106,18 @@ describe("SearchTree Test Suite", function() {
 		
 		// Try to dequeue invalid UUIDs:
 		expect(this.SearchTree.dequeueWeblinkTree(this.weblinkUUID3)).toBe(false);
-		expect(this.SearchTree.weblinkQueue).toEqual([this.weblinkUUID1]);
-		expect(this.SearchTree.weblinkTreeNodes).toEqual([this.weblinkUUID2]);
+		expect(this.SearchTree.childQueue).toEqual([this.weblinkUUID1]);
+		expect(this.SearchTree.childNodes).toEqual([this.weblinkUUID2]);
 
 		// Try to dequeue already added UUID:
 		expect(this.SearchTree.dequeueWeblinkTree(this.weblinkUUID2)).toBe(false);
-		expect(this.SearchTree.weblinkQueue).toEqual([this.weblinkUUID1]);
-		expect(this.SearchTree.weblinkTreeNodes).toEqual([this.weblinkUUID2]);
+		expect(this.SearchTree.childQueue).toEqual([this.weblinkUUID1]);
+		expect(this.SearchTree.childNodes).toEqual([this.weblinkUUID2]);
 
 		// Try to dequeue queued UUID:
 		expect(this.SearchTree.dequeueWeblinkTree(this.weblinkUUID1)).toBe(true);
-		expect(this.SearchTree.weblinkQueue).toEqual([]);
-		expect(this.SearchTree.weblinkTreeNodes).toEqual([this.weblinkUUID2, this.weblinkUUID1]);
+		expect(this.SearchTree.childQueue).toEqual([]);
+		expect(this.SearchTree.childNodes).toEqual([this.weblinkUUID2, this.weblinkUUID1]);
 
 	});
 	
