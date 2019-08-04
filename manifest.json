@@ -3,10 +3,10 @@
 	"version": "1.0",
 	"description": "Rabbithole chrome extension",
 
-	"permissions": ["tabs", "notifications"],
+	"permissions": ["tabs", "storage", "notifications", "webNavigation", "history", "geolocation"],
 
 	"background": {
-		"scripts": ["js/background.js"],
+		"page": "html/background.html",
 		"persistent": false
 	},
 
