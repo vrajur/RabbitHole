@@ -26,13 +26,12 @@ describe("BackgroundManager Test Suite", function() {
 
 	});
 
-	it("tests handleOnCreatedNew", function (done) {
+	it("tests handleOnCreated", function (done) {
 
 		testOpenTab0(this); // Launches chain of function calls
 
 		function testOpenTab0(f) {
-			debugger; // this
-			f.BackgroundManager.handleOnCreatedNew(f.tab0, (debugOutput1) => {
+			f.BackgroundManager.handleOnCreated(f.tab0, (debugOutput1) => {
 				f.debugOutput1 = debugOutput1;
 				const searchTabCollection1 = f.BackgroundManager.SearchTabCollection;
 				const searchTaskCollection1 = f.BackgroundManager.SearchTaskCollection;
@@ -42,8 +41,7 @@ describe("BackgroundManager Test Suite", function() {
 		}
 
 		function testOpenTab1(f) {
-			debugger;
-			f.BackgroundManager.handleOnCreatedNew(f.tab1, (debugOutput2) => {
+			f.BackgroundManager.handleOnCreated(f.tab1, (debugOutput2) => {
 				f.debugOutput2 = debugOutput2;
 				const searchTabCollection2 = f.BackgroundManager.SearchTabCollection;
 				const searchTaskCollection2 = f.BackgroundManager.SearchTaskCollection;
@@ -53,8 +51,7 @@ describe("BackgroundManager Test Suite", function() {
 		}
 		
 		function testOpenTab2(f) {
-			debugger;
-			f.BackgroundManager.handleOnCreatedNew(f.tab2, (debugOutput3) => {
+			f.BackgroundManager.handleOnCreated(f.tab2, (debugOutput3) => {
 				const searchTabCollection3 = f.BackgroundManager.SearchTabCollection;
 				const searchTaskCollection3 = f.BackgroundManager.SearchTaskCollection;
 				checkDebugOutput3(debugOutput3, searchTabCollection3, searchTaskCollection3, f.debugOutput1, f.debugOutput2);
@@ -63,7 +60,6 @@ describe("BackgroundManager Test Suite", function() {
 		}
 
 		function checkDebugOutput(debugOutput, searchTabCollection, searchTaskCollection, createdNewTask) {
-			debugger;
 			// Create SearchTab: 
 			expect(searchTabCollection.getSearchTabUUID(debugOutput.chromeTabID)).toEqual(debugOutput.searchTab.UUID);
 			expect(searchTabCollection.getChromeTabID(debugOutput.searchTab.UUID)).toEqual(debugOutput.chromeTabID);
@@ -74,7 +70,6 @@ describe("BackgroundManager Test Suite", function() {
 		}
 
 		function checkDebugOutput1(debugOutput, searchTabCollection, searchTaskCollection, createdNewTask=true) {
-			debugger;
 			
 			checkDebugOutput(debugOutput, searchTabCollection, searchTaskCollection, true);
 
@@ -89,7 +84,6 @@ describe("BackgroundManager Test Suite", function() {
 		}
 
 		function checkDebugOutput2(debugOutput, searchTabCollection, searchTaskCollection, prevDebugOutput, createdNewTask=true) {
-			debugger;
 
 			checkDebugOutput(debugOutput, searchTabCollection, searchTaskCollection, createdNewTask);
 
