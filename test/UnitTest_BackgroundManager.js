@@ -26,9 +26,44 @@ describe("BackgroundManager Test Suite", function() {
 
 	});
 
-	it("tests handleOnCreated", function () {
+	it("tests handleOnCreatedNew", function (done) {
+
+		testOpenTab0(this); // Launches chain of function calls
+
+		function testOpenTab0(f) {
+			debugger; // this
+			f.BackgroundManager.handleOnCreatedNew(f.tab0, (debugOutput1) => {
+				f.debugOutput1 = debugOutput1;
+				const searchTabCollection1 = f.BackgroundManager.SearchTabCollection;
+				const searchTaskCollection1 = f.BackgroundManager.SearchTaskCollection;
+				checkDebugOutput1(debugOutput1, searchTabCollection1, searchTaskCollection1);
+				testOpenTab1(f);
+			});
+		}
+
+		function testOpenTab1(f) {
+			debugger;
+			f.BackgroundManager.handleOnCreatedNew(f.tab1, (debugOutput2) => {
+				f.debugOutput2 = debugOutput2;
+				const searchTabCollection2 = f.BackgroundManager.SearchTabCollection;
+				const searchTaskCollection2 = f.BackgroundManager.SearchTaskCollection;
+				checkDebugOutput2(debugOutput2, searchTabCollection2, searchTaskCollection2, f.debugOutput1);
+				testOpenTab2(f);
+			});	
+		}
+		
+		function testOpenTab2(f) {
+			debugger;
+			f.BackgroundManager.handleOnCreatedNew(f.tab2, (debugOutput3) => {
+				const searchTabCollection3 = f.BackgroundManager.SearchTabCollection;
+				const searchTaskCollection3 = f.BackgroundManager.SearchTaskCollection;
+				checkDebugOutput3(debugOutput3, searchTabCollection3, searchTaskCollection3, f.debugOutput1, f.debugOutput2);
+				done();
+			});
+		}
 
 		function checkDebugOutput(debugOutput, searchTabCollection, searchTaskCollection, createdNewTask) {
+			debugger;
 			// Create SearchTab: 
 			expect(searchTabCollection.getSearchTabUUID(debugOutput.chromeTabID)).toEqual(debugOutput.searchTab.UUID);
 			expect(searchTabCollection.getChromeTabID(debugOutput.searchTab.UUID)).toEqual(debugOutput.chromeTabID);
@@ -39,6 +74,7 @@ describe("BackgroundManager Test Suite", function() {
 		}
 
 		function checkDebugOutput1(debugOutput, searchTabCollection, searchTaskCollection, createdNewTask=true) {
+			debugger;
 			
 			checkDebugOutput(debugOutput, searchTabCollection, searchTaskCollection, true);
 
@@ -53,6 +89,7 @@ describe("BackgroundManager Test Suite", function() {
 		}
 
 		function checkDebugOutput2(debugOutput, searchTabCollection, searchTaskCollection, prevDebugOutput, createdNewTask=true) {
+			debugger;
 
 			checkDebugOutput(debugOutput, searchTabCollection, searchTaskCollection, createdNewTask);
 
@@ -73,24 +110,7 @@ describe("BackgroundManager Test Suite", function() {
 			assignment[prevDebugOutput2.currentSearchTaskAssignmentUUID] = new Set([prevDebugOutput2.searchTab.UUID]);
 			assignment[debugOutput.currentSearchTaskAssignmentUUID].add(debugOutput.searchTab.UUID);
 			expect(searchTaskCollection.Task2Tab).toEqual(assignment);
-
 		}
-
-		const debugOutput1 = this.BackgroundManager.handleOnCreated(this.tab0, true);
-		const searchTabCollection1 = this.BackgroundManager.SearchTabCollection;
-		const searchTaskCollection1 = this.BackgroundManager.SearchTaskCollection;
-		checkDebugOutput1(debugOutput1, searchTabCollection1, searchTaskCollection1);
-
-		const debugOutput2 = this.BackgroundManager.handleOnCreated(this.tab1, true);
-		const searchTabCollection2 = this.BackgroundManager.SearchTabCollection;
-		const searchTaskCollection2 = this.BackgroundManager.SearchTaskCollection;
-		checkDebugOutput2(debugOutput2, searchTabCollection2, searchTaskCollection2, debugOutput1);
-		
-		const debugOutput3 = this.BackgroundManager.handleOnCreated(this.tab2, true);
-		const searchTabCollection3 = this.BackgroundManager.SearchTabCollection;
-		const searchTaskCollection3 = this.BackgroundManager.SearchTaskCollection;
-		checkDebugOutput3(debugOutput3, searchTabCollection3, searchTaskCollection3, debugOutput1, debugOutput2);
-
 	});
 
 
