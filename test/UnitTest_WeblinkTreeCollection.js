@@ -58,8 +58,150 @@ describe("WeblinkTreeCollection Test Suite", function() {
 
 	});
 
-	xit("tests sync", function() {
+	it("tests get", function(done){
+		chrome.storage.sync.clear();
+		const testWeblinkTreeCollection = this.WeblinkTreeCollection;
+		const key = WeblinkTreeCollection.name+"_"+testWeblinkTreeCollection.UUID;
 
+		// Set with Chrome:
+		chrome.storage.sync.set({[key]:testWeblinkTreeCollection}, () => {
+			console.log("Chrome Set: ", {[key]:testWeblinkTreeCollection});
+		});
+
+		// Get with WeblinkTreeCollection:
+		WeblinkTreeCollection.get(testWeblinkTreeCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testWeblinkTreeCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set", function(done) {
+		chrome.storage.sync.clear();
+		const testWeblinkTreeCollection = this.WeblinkTreeCollection;
+		const key = WeblinkTreeCollection.name+"_"+testWeblinkTreeCollection.UUID;
+
+		// Set with WeblinkTreeCollection:
+		WeblinkTreeCollection.set(testWeblinkTreeCollection);
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testWeblinkTreeCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set and get", function(done) {
+		chrome.storage.sync.clear();
+		const testWeblinkTreeCollection = this.WeblinkTreeCollection;
+		const key = WeblinkTreeCollection.name+"_"+testWeblinkTreeCollection.UUID;
+
+		WeblinkTreeCollection.set(testWeblinkTreeCollection);
+		WeblinkTreeCollection.get(testWeblinkTreeCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testWeblinkTreeCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync", function(done) {
+		chrome.storage.sync.clear();
+		const testWeblinkTreeCollection = this.WeblinkTreeCollection;
+		const key = WeblinkTreeCollection.name+"_"+testWeblinkTreeCollection.UUID;
+
+		// Sync:
+		testWeblinkTreeCollection.sync();
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testWeblinkTreeCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync and get", function(done) {
+		chrome.storage.sync.clear();
+		const testWeblinkTreeCollection = this.WeblinkTreeCollection;
+		const key = WeblinkTreeCollection.name+"_"+testWeblinkTreeCollection.UUID;
+
+		// Sync:
+		testWeblinkTreeCollection.sync();
+
+		// Get with WeblinkTreeCollection:
+		WeblinkTreeCollection.get(testWeblinkTreeCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testWeblinkTreeCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests repeated sync and get", function(done) {
+		chrome.storage.sync.clear();
+		let testWeblinkTreeCollection = this.WeblinkTreeCollection;
+		const testArray = [Utilities.uuidv4(), Utilities.uuidv4()];
+		testWeblinkTreeCollection.testArray = testArray;
+
+		const N  = 2;
+		let numAsyncCalls = N;
+		let UUIDs = [testWeblinkTreeCollection.UUID];
+
+		function testIteration() {
+			// Sync:
+			testWeblinkTreeCollection.sync(() => {
+				console.log("ITERATION: ", testWeblinkTreeCollection.UUID);
+			});
+
+			// Get with WeblinkTreeCollection:
+			WeblinkTreeCollection.get(testWeblinkTreeCollection.UUID, (obj) => {
+				try {
+					numAsyncCalls--;
+					expect(obj).not.toBe(undefined);
+					expect(obj.UUID).toBe(testWeblinkTreeCollection.UUID);
+					expect(obj.testArray).toEqual(testArray);
+					if (numAsyncCalls == 0) {
+						expect(UUIDs.length).toBe(N);
+						expect(new Set(UUIDs).size).toBe(UUIDs.length);
+						done();
+					} else {
+						testWeblinkTreeCollection.UUID = Utilities.uuidv4();
+						UUIDs.push(testWeblinkTreeCollection.UUID);
+						testIteration();
+					}
+				}
+				catch (e) {
+					done.fail(e)
+				}
+			});
+		}
+
+		testIteration();
 	});
 
 

@@ -16,7 +16,7 @@ describe("SearchTree Test Suite", function() {
 		this.SearchTree = new SearchTree(this.url, this.queryString);
 	});
 
-	it("tests the constructor", function() {
+	it("tests the constructor", function(done) {
 		expect(this.SearchTree).not.toBe(undefined);
 		expect(this.SearchTree.UUID.length).toBe(36);
 		expect(this.SearchTree.url).toEqual(this.url);
@@ -33,7 +33,7 @@ describe("SearchTree Test Suite", function() {
 			expect(SearchTreeNull.url).toBe(null);
 			expect(SearchTreeNull.metadata.date instanceof Date).toBe(true);
 			expect(this.SearchTree.metadata.date < SearchTreeNull.metadata.date).toBe(true);
-
+			done();
 		}, 500);
 	});
 
@@ -133,8 +133,150 @@ describe("SearchTree Test Suite", function() {
 		expect(this.SearchTree.isQueued(this.weblinkUUID2)).toBe(true);
 	});
 	
-	xit("tests sync", function() {
-		
+	it("tests get", function(done){
+		chrome.storage.sync.clear();
+		const testSearchTree = this.SearchTree;
+		const key = SearchTree.name+"_"+testSearchTree.UUID;
+
+		// Set with Chrome:
+		chrome.storage.sync.set({[key]:testSearchTree}, () => {
+			console.log("Chrome Set: ", {[key]:testSearchTree});
+		});
+
+		// Get with SearchTree:
+		SearchTree.get(testSearchTree.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTree.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTree = this.SearchTree;
+		const key = SearchTree.name+"_"+testSearchTree.UUID;
+
+		// Set with SearchTree:
+		SearchTree.set(testSearchTree);
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTree.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTree = this.SearchTree;
+		const key = SearchTree.name+"_"+testSearchTree.UUID;
+
+		SearchTree.set(testSearchTree);
+		SearchTree.get(testSearchTree.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTree.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTree = this.SearchTree;
+		const key = SearchTree.name+"_"+testSearchTree.UUID;
+
+		// Sync:
+		testSearchTree.sync();
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTree.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTree = this.SearchTree;
+		const key = SearchTree.name+"_"+testSearchTree.UUID;
+
+		// Sync:
+		testSearchTree.sync();
+
+		// Get with SearchTree:
+		SearchTree.get(testSearchTree.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTree.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests repeated sync and get", function(done) {
+		chrome.storage.sync.clear();
+		let testSearchTree = this.SearchTree;
+		const testArray = [Utilities.uuidv4(), Utilities.uuidv4()];
+		testSearchTree.testArray = testArray;
+
+		const N  = 2;
+		let numAsyncCalls = N;
+		let UUIDs = [testSearchTree.UUID];
+
+		function testIteration() {
+			// Sync:
+			testSearchTree.sync(() => {
+				console.log("ITERATION: ", testSearchTree.UUID);
+			});
+
+			// Get with SearchTree:
+			SearchTree.get(testSearchTree.UUID, (obj) => {
+				try {
+					numAsyncCalls--;
+					expect(obj).not.toBe(undefined);
+					expect(obj.UUID).toBe(testSearchTree.UUID);
+					expect(obj.testArray).toEqual(testArray);
+					if (numAsyncCalls == 0) {
+						expect(UUIDs.length).toBe(N);
+						expect(new Set(UUIDs).size).toBe(UUIDs.length);
+						done();
+					} else {
+						testSearchTree.UUID = Utilities.uuidv4();
+						UUIDs.push(testSearchTree.UUID);
+						testIteration();
+					}
+				}
+				catch (e) {
+					done.fail(e)
+				}
+			});
+		}
+
+		testIteration();
 	});
 
 

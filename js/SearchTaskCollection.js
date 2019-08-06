@@ -1,8 +1,9 @@
+import StorageItem from "./StorageItem.js";
 
-
-export default class SearchTaskCollection {
+export default class SearchTaskCollection extends StorageItem {
 
 	constructor() {
+		super();
 		this.searchTasks = new Set;
 		this.Task2Tab = {};	// Key: TaskUUID, Value: Set([SearchTabUUID])
 		this.Tab2Task = {};	// Key: SearchTabUUID, Value: TaskUUID
@@ -57,9 +58,26 @@ export default class SearchTaskCollection {
 
 	getAssignedTabs(taskUUID) {}
 
-	sync() {
-		console.warn("Test this");
-		debugger;
+	sync(callback) {
+		const tag = this.constructor.name;
+		StorageItem.set(tag, this, callback);
 	}
+
+	static get(UUID, callback) {
+		StorageItem.get(this.name, UUID, (res) => {
+			const key = StorageItem.getKey(this.name, UUID);
+			let obj = new this();
+			obj = Object.assign(obj, res[key]);
+			callback(obj);
+		});
+	} 
+
+	static set(obj, callback) {
+		if (obj.constructor.name != this.name) {
+			console.error("Invalid object passed to subclassed StorageItem.set(): ", obj);
+			return -1;
+		}
+		StorageItem.set(this.name, obj, callback);
+	} 
 
 }

@@ -149,8 +149,150 @@ describe("SearchTabCollection Test Suite", function() {
 		expect(this.SearchTabCollection.getChromeTabID(this.UUID2)).toBe(this.chromeID2);
 	});
 	
-	xit("tests sync", function() {
-		expect(true).toBe(true);
+	it("tests get", function(done){
+		chrome.storage.sync.clear();
+		const testSearchTabCollection = this.SearchTabCollection;
+		const key = SearchTabCollection.name+"_"+testSearchTabCollection.UUID;
+
+		// Set with Chrome:
+		chrome.storage.sync.set({[key]:testSearchTabCollection}, () => {
+			console.log("Chrome Set: ", {[key]:testSearchTabCollection});
+		});
+
+		// Get with SearchTabCollection:
+		SearchTabCollection.get(testSearchTabCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTabCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTabCollection = this.SearchTabCollection;
+		const key = SearchTabCollection.name+"_"+testSearchTabCollection.UUID;
+
+		// Set with SearchTabCollection:
+		SearchTabCollection.set(testSearchTabCollection);
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTabCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTabCollection = this.SearchTabCollection;
+		const key = SearchTabCollection.name+"_"+testSearchTabCollection.UUID;
+
+		SearchTabCollection.set(testSearchTabCollection);
+		SearchTabCollection.get(testSearchTabCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTabCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTabCollection = this.SearchTabCollection;
+		const key = SearchTabCollection.name+"_"+testSearchTabCollection.UUID;
+
+		// Sync:
+		testSearchTabCollection.sync();
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTabCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTabCollection = this.SearchTabCollection;
+		const key = SearchTabCollection.name+"_"+testSearchTabCollection.UUID;
+
+		// Sync:
+		testSearchTabCollection.sync();
+
+		// Get with SearchTabCollection:
+		SearchTabCollection.get(testSearchTabCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTabCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests repeated sync and get", function(done) {
+		chrome.storage.sync.clear();
+		let testSearchTabCollection = this.SearchTabCollection;
+		const testArray = [Utilities.uuidv4(), Utilities.uuidv4()];
+		testSearchTabCollection.testArray = testArray;
+
+		const N  = 2;
+		let numAsyncCalls = N;
+		let UUIDs = [testSearchTabCollection.UUID];
+
+		function testIteration() {
+			// Sync:
+			testSearchTabCollection.sync(() => {
+				console.log("ITERATION: ", testSearchTabCollection.UUID);
+			});
+
+			// Get with SearchTabCollection:
+			SearchTabCollection.get(testSearchTabCollection.UUID, (obj) => {
+				try {
+					numAsyncCalls--;
+					expect(obj).not.toBe(undefined);
+					expect(obj.UUID).toBe(testSearchTabCollection.UUID);
+					expect(obj.testArray).toEqual(testArray);
+					if (numAsyncCalls == 0) {
+						expect(UUIDs.length).toBe(N);
+						expect(new Set(UUIDs).size).toBe(UUIDs.length);
+						done();
+					} else {
+						testSearchTabCollection.UUID = Utilities.uuidv4();
+						UUIDs.push(testSearchTabCollection.UUID);
+						testIteration();
+					}
+				}
+				catch (e) {
+					done.fail(e)
+				}
+			});
+		}
+
+		testIteration();
 	});
 
 });

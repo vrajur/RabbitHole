@@ -140,8 +140,150 @@ describe("SearchTaskCollection Test Suite", function() {
 
 	// });
 
-	xit("tests sync", function() {
+	it("tests get", function(done){
+		chrome.storage.sync.clear();
+		const testSearchTaskCollection = this.SearchTaskCollection;
+		const key = SearchTaskCollection.name+"_"+testSearchTaskCollection.UUID;
 
+		// Set with Chrome:
+		chrome.storage.sync.set({[key]:testSearchTaskCollection}, () => {
+			console.log("Chrome Set: ", {[key]:testSearchTaskCollection});
+		});
+
+		// Get with SearchTaskCollection:
+		SearchTaskCollection.get(testSearchTaskCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTaskCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTaskCollection = this.SearchTaskCollection;
+		const key = SearchTaskCollection.name+"_"+testSearchTaskCollection.UUID;
+
+		// Set with SearchTaskCollection:
+		SearchTaskCollection.set(testSearchTaskCollection);
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTaskCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTaskCollection = this.SearchTaskCollection;
+		const key = SearchTaskCollection.name+"_"+testSearchTaskCollection.UUID;
+
+		SearchTaskCollection.set(testSearchTaskCollection);
+		SearchTaskCollection.get(testSearchTaskCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTaskCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTaskCollection = this.SearchTaskCollection;
+		const key = SearchTaskCollection.name+"_"+testSearchTaskCollection.UUID;
+
+		// Sync:
+		testSearchTaskCollection.sync();
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTaskCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTaskCollection = this.SearchTaskCollection;
+		const key = SearchTaskCollection.name+"_"+testSearchTaskCollection.UUID;
+
+		// Sync:
+		testSearchTaskCollection.sync();
+
+		// Get with SearchTaskCollection:
+		SearchTaskCollection.get(testSearchTaskCollection.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTaskCollection.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests repeated sync and get", function(done) {
+		chrome.storage.sync.clear();
+		let testSearchTaskCollection = this.SearchTaskCollection;
+		const testArray = [Utilities.uuidv4(), Utilities.uuidv4()];
+		testSearchTaskCollection.testArray = testArray;
+
+		const N  = 2;
+		let numAsyncCalls = N;
+		let UUIDs = [testSearchTaskCollection.UUID];
+
+		function testIteration() {
+			// Sync:
+			testSearchTaskCollection.sync(() => {
+				console.log("ITERATION: ", testSearchTaskCollection.UUID);
+			});
+
+			// Get with SearchTaskCollection:
+			SearchTaskCollection.get(testSearchTaskCollection.UUID, (obj) => {
+				try {
+					numAsyncCalls--;
+					expect(obj).not.toBe(undefined);
+					expect(obj.UUID).toBe(testSearchTaskCollection.UUID);
+					expect(obj.testArray).toEqual(testArray);
+					if (numAsyncCalls == 0) {
+						expect(UUIDs.length).toBe(N);
+						expect(new Set(UUIDs).size).toBe(UUIDs.length);
+						done();
+					} else {
+						testSearchTaskCollection.UUID = Utilities.uuidv4();
+						UUIDs.push(testSearchTaskCollection.UUID);
+						testIteration();
+					}
+				}
+				catch (e) {
+					done.fail(e)
+				}
+			});
+		}
+
+		testIteration();
 	});
 
 });

@@ -1,3 +1,4 @@
+import StorageItem from "../js/StorageItem.js";
 import SearchTask from "../js/SearchTask.js";
 import Utilities from "../js/Utilities.js";
 
@@ -146,8 +147,150 @@ describe("SearchTask Test Suite", function () {
 	});
 
 
-	xit("tests sync", function() {
-		expect(true).toBe(true);
+	it("tests get", function(done){
+		chrome.storage.sync.clear();
+		const testSearchTask = this.SearchTask;
+		const key = SearchTask.name+"_"+testSearchTask.UUID;
+
+		// Set with Chrome:
+		chrome.storage.sync.set({[key]:testSearchTask}, () => {
+			console.log("Chrome Set: ", {[key]:testSearchTask});
+		});
+
+		// Get with SearchTask:
+		SearchTask.get(testSearchTask.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTask.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTask = this.SearchTask;
+		const key = SearchTask.name+"_"+testSearchTask.UUID;
+
+		// Set with SearchTask:
+		SearchTask.set(testSearchTask);
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTask.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests set and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTask = this.SearchTask;
+		const key = SearchTask.name+"_"+testSearchTask.UUID;
+
+		SearchTask.set(testSearchTask);
+		SearchTask.get(testSearchTask.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTask.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTask = this.SearchTask;
+		const key = SearchTask.name+"_"+testSearchTask.UUID;
+
+		// Sync:
+		testSearchTask.sync();
+
+		// Get with Chrome:
+		chrome.storage.sync.get([key], (res) => {
+			try {
+				expect(key in res).toBe(true);
+				expect(res[key].UUID).toBe(testSearchTask.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests sync and get", function(done) {
+		chrome.storage.sync.clear();
+		const testSearchTask = this.SearchTask;
+		const key = SearchTask.name+"_"+testSearchTask.UUID;
+
+		// Sync:
+		testSearchTask.sync();
+
+		// Get with SearchTask:
+		SearchTask.get(testSearchTask.UUID, (obj) => {
+			try {
+				expect(obj).not.toBe(undefined);
+				expect(obj.UUID).toBe(testSearchTask.UUID);
+				done();
+			}
+			catch (e) {
+				done.fail(e)
+			}
+		});
+	});
+
+	it("tests repeated sync and get", function(done) {
+		chrome.storage.sync.clear();
+		let testSearchTask = this.SearchTask;
+		const testArray = [Utilities.uuidv4(), Utilities.uuidv4()];
+		testSearchTask.testArray = testArray;
+
+		const N  = 2;
+		let numAsyncCalls = N;
+		let UUIDs = [testSearchTask.UUID];
+
+		function testIteration() {
+			// Sync:
+			testSearchTask.sync(() => {
+				console.log("ITERATION: ", testSearchTask.UUID);
+			});
+
+			// Get with SearchTask:
+			SearchTask.get(testSearchTask.UUID, (obj) => {
+				try {
+					numAsyncCalls--;
+					expect(obj).not.toBe(undefined);
+					expect(obj.UUID).toBe(testSearchTask.UUID);
+					expect(obj.testArray).toEqual(testArray);
+					if (numAsyncCalls == 0) {
+						expect(UUIDs.length).toBe(N);
+						expect(new Set(UUIDs).size).toBe(UUIDs.length);
+						done();
+					} else {
+						testSearchTask.UUID = Utilities.uuidv4();
+						UUIDs.push(testSearchTask.UUID);
+						testIteration();
+					}
+				}
+				catch (e) {
+					done.fail(e)
+				}
+			});
+		}
+
+		testIteration();
 	});
 
 });
