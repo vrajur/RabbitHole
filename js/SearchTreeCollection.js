@@ -6,7 +6,8 @@ export default class SearchTreeCollection extends StorageItem {
 
 	constructor() {
 		super();
-		this.searchTrees = [];
+		this.searchTrees = []; // TODO Change this to a hashtable {key: searchQuery, value: searchTree}
+
 	}
 
 

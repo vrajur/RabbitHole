@@ -16,6 +16,7 @@ export default class SearchTab extends StorageItem {
 
 		this.currentState = SearchTabState.NONE;
 		this.previousState = SearchTabState.NONE;
+		this.stateHistory = []; // TODO TEST THIS
 
 		this.activeSearchTree = null;
 		this.activeWeblinkTree = null;

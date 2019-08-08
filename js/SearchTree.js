@@ -10,6 +10,10 @@ export default class SearchTree extends TreeNode {
 		super({url: url});
 		this.queryString = queryString;
 		this.state = SearchTreeState.IN_PROGRESS_INACTIVE;
+
+		if (this.queryString != null) {
+			this.queryString = this.queryString.toLowerCase();
+		}
 	}
 
 	addWeblinkTree(weblinkTreeUUID) {

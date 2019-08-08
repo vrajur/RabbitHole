@@ -5,7 +5,7 @@ import Utilities from "./Utilities.js";
 export default class WeblinkTreeCollection  {
 
 	constructor() {
-		this.weblinkTrees = [];
+		this.weblinkTrees = [];	// TODO Change this to a hashtable {key: url, value: weblinkTree}
 	}
 
 
