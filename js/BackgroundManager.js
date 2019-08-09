@@ -20,7 +20,8 @@ export default class BackgroundManager {
 		// Register Listeners:
 		chrome.tabs.onCreated.addListener((tab) => this.handleOnCreated(tab, (res) => console.log("[ONCREATED] Debug Output: ", res)));
 
-		chrome.tabs.onUpdated.addListener((tabId) => this.handleOnUpdated(tabId, (res) => console.log("[ONUPDATED] Debug Output: ", res)));
+		chrome.webNavigation.onCompleted.addListener((tabInfo) => this.handleOnUpdated(tabInfo, (res) => console.log("[ONCOMPLETED] Debug Output: ", res)));
+		// chrome.tabs.onUpdated.addListener((tabId) => this.handleOnUpdated(tabId, (res) => console.log("[ONUPDATED] Debug Output: ", res)));
 	}
 
 
@@ -127,8 +128,17 @@ export default class BackgroundManager {
 		} // END createTabToTaskAssignment
 	} // END handleOnCreated()
 
-	handleOnUpdated(tabId, debugCallback) {
-		console.log("On Updated: ", tabId);
+	handleOnUpdated(tabInfo, debugCallback) {
+
+		if (tabInfo.frameId != 0) {		// Only run when main frame has loaded (not subframes)
+			return;
+		}	
+
+		console.log("On Completed: ", tabInfo);
+
+		const tabId = tabInfo.tabId;
+
+		debugger;
 
 		let debugOutput = {};
 
@@ -207,7 +217,7 @@ export default class BackgroundManager {
 
 			// debugger; //searchTask
 			
-			const url = chromeTab.url;
+			url = chromeTab.url;
 			let isNew, isQuery, tabState;
 
 			if (debugCallback) {
@@ -216,8 +226,8 @@ export default class BackgroundManager {
 			}
 
 			chrome.history.search({text:url}, (historyItems) => {
-				isNew = historyItems.length == 0;
-				isQuery = url.includes("google.com/search?q=");	 // Put this logic somewhere else
+				isNew = historyItems.length == 0 || historyItems[0].visitCount == 1;
+				isQuery = url.includes("google.com/search?");	 // Put this logic somewhere else
 
 				if (isNew && isQuery) {
 					state = SearchTabState.ON_NEW_SEARCH_PAGE;
@@ -251,21 +261,27 @@ export default class BackgroundManager {
 			switch (state) {
 
 				case SearchTabState.ON_NEW_SEARCH_PAGE:
-					let query = document.getElementsByClassName("gLFyf gsfi")[0].value;	// Get query
-					node = new SearchTree(url, query);									// Create new SearchTree
-					searchTask.addSearchTree(node.UUID);								// Add to SearchTask
-					searchTab.activeSearchTree = node;									// Set activeSearchTree for Tab
-					if (debugCallback) {
-						debugOutput["query"] = node.queryString();
-						console.log("Search Query: ", node.queryString());
-					}
-					debugger;
-					finish();															// Finish
+					// let query = document.getElementsByClassName("gLFyf gsfi")[0].value;			// Get query
+					chrome.tabs.sendMessage(tabId, {message: "queryRequest"}, function(query) {
+						if (query != undefined) {
+							node = new SearchTree(url, query);									// Create new SearchTree
+							searchTask.addSearchTree(node.UUID);								// Add to SearchTask
+							searchTab.activeSearchTree = node.UUID;									// Set activeSearchTree for Tab
+							if (debugCallback) {
+								debugOutput["query"] = node.queryString;
+								console.log("Search Query: ", node.queryString);
+							}
+							// debugger;
+							finish();															// Finish
+						}
+					});													
 					break;
 
 				case SearchTabState.ON_NEW_WEBLINK_PAGE:
-					node = new WeblinkTree(url);										// Create new WeblinkTree
-					SearchTree.get(searchTask.activeSearchTree, (searchTree) => {		// Get activeSearchTree
+					node = new WeblinkTree(url);	
+					console.log("SearchTask: ", searchTab);									// Create new WeblinkTree
+					debugger; 
+					SearchTree.get(searchTab.activeSearchTree, (searchTree) => {		// Get activeSearchTree
 						//debugger;
 						searchTree.addWeblinkTree(node.UUID);							// Add WeblinkTree to SearchTree
 						searchTree.sync();												// Update SearchTree
