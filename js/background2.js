@@ -1,0 +1,1 @@
+var lastSearchTab = 1337;

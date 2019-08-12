@@ -1,0 +1,28 @@
+{
+	"name": "Rabbithole",
+	"version": "1.0",
+	"description": "Rabbithole chrome extension",
+
+	"permissions": ["tabs", "storage", "notifications", "webNavigation", "history", "geolocation"],
+
+	"background": {
+		"page": "html/background.html",
+		"persistent": false
+	},
+
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["js/contentScript.js"]
+		}
+	],
+
+	"browser_action": {
+		"default_title": "Tabless",
+		"default_popup": "html/popup.html"
+	},
+
+	"options_page" : "html/options.html",
+
+	"manifest_version": 2
+}
