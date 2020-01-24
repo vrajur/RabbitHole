@@ -1,0 +1,67 @@
+
+scalar Timestamp
+scalar NodeRef
+
+enum EventType {
+	NAVIGATE_TO
+	TOGGLE_PAGE_FLAG
+}
+
+interface LoggingEvent {
+	id: String
+	eventType: EventType
+	timestamp: Timestamp
+}
+
+type NavigateToEvent implements LoggingEvent {
+	id: String
+	eventType: EventType
+	timestamp: Timestamp
+	from: NodeRef
+	to: NodeRef
+}
+
+type TogglePageFlagEvent implements LoggingEvent {
+	id: String
+	eventType: EventType
+	timestamp: Timestamp
+	node: NodeRef
+}
+
+type NodeVisit {
+	id: String
+}
+
+interface BaseNode {
+	id: String
+	url: String
+	isStarred: Boolean
+	visits: [NodeVisit]
+}
+
+type Node implements BaseNode {
+	id: String
+	url: String
+	isStarred: Boolean
+	visits: [NodeVisit]
+}
+
+type SearchNode implements BaseNode {
+	id: String
+	url: String
+	isStarred: Boolean
+	visits: [NodeVisit]
+	searchQuery: String
+}
+
+union NodeUnion = Node | SearchNode
+
+
+type Query {
+	hello: String
+	getAllNodes: [Node]
+}
+
+type Mutation {
+	addNode(url: String) : Node 
+}

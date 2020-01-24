@@ -1,0 +1,14 @@
+{
+	"name": "Rabbithole-Prototype",
+	"version": "1.0",
+	"description": "Prototype of Rabbithole chrome extension",
+
+	"permissions": ["tabs", "storage", "notifications", "webNavigation", "history", "geolocation"],
+
+	"background": {
+		"page": "html/background.html",
+		"persistent": false
+	},
+
+	"manifest_version": 2
+}

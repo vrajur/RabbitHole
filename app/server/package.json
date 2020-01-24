@@ -1,0 +1,17 @@
+{
+  "name": "rabbithole-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vinay Rajur",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server": "^2.9.16",
+    "fs": "0.0.1-security",
+    "graphql": "^14.5.8",
+    "pg": "^7.17.1"
+  }
+}

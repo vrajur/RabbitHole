@@ -1,0 +1,104 @@
+import React from 'react';
+
+import { gql } from 'apollo-boost';
+import { Query } from '@apollo/react-components';
+import { useQuery } from '@apollo/react-hooks';
+
+
+import * as THREE from '../node_modules/three/build/three.min.js';
+import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
+
+const getAllNodesQuery = gql`query {
+  getAllNodes {
+    id
+    url
+  }
+}`;
+
+export class NodeList extends React.Component {
+
+  render() {
+    return (
+      <Query query={getAllNodesQuery}>
+        {
+          ({loading, error, data}) => {
+            if (loading) return <p> Loading... </p>;
+            if (error) return <p> Error: {error} </p>;
+
+            return data.getAllNodes.map(({id, url}) => (
+              <div key={id}>
+                <p> {id}: {url} </p>
+              </div>
+            ));
+          }
+        }
+      </Query>
+    );
+  }
+}
+
+
+export class NodeGraph extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {nodes: []};
+    this.updateNodes = this.updateNodes.bind(this);
+  }
+
+  updateNodes(nodeList) {
+    debugger;
+    this.setState({
+      nodes: nodeList
+    });
+
+    let sphere = new THREE.Mesh(new THREE.SphereGeometry(.1, 32, 32), new THREE.MeshNormalMaterial());
+    for (let node of nodeList) {
+      let nodeSphere = sphere.clone();
+      nodeSphere.nodeID = node.id;
+      nodeSphere.url = node.url;
+
+      const scale = 2;
+
+      nodeSphere.position.x += scale*(.5 - Math.random());
+      nodeSphere.position.y += scale*(.5 - Math.random());
+
+      this.scene.add(nodeSphere);
+    }
+  }
+
+
+  componentDidMount() {
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    const controls = new THREE.OrbitControls( this.camera, renderer.domElement );
+
+    // document.body.appendChild( renderer.domElement );
+    // use ref as a mount point of the Three.js scene instead of the document.body
+    this.refs['three-canvas'].appendChild(renderer.domElement);
+    const geometry = new THREE.BoxGeometry( .1, .1, .1 );
+    const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+    const cube = new THREE.Mesh( geometry, material );
+    this.scene.add( cube );
+    this.camera.position.z = 5;
+    const animate = () => {
+      requestAnimationFrame( animate );
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+      renderer.render( this.scene, this.camera );
+    };
+    animate();
+
+    // Subscribe to node data:
+    this.props.client.query({query: getAllNodesQuery}).then((res) => this.updateNodes(res.data.getAllNodes));
+  }
+
+  render() {
+    return (
+      <div ref="three-canvas" />
+    );
+  }
+}
+
