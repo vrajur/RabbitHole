@@ -152,6 +152,7 @@ export class NodeVisTimeline extends React.Component {
     this.dataset = new window.vis.DataSet([]);
 
     const options = {
+      align: 'left',
       width: '100%',
       autoResize: false,
       maxHeight: '400px',
@@ -162,9 +163,16 @@ export class NodeVisTimeline extends React.Component {
       },
       tooltip: {
         followMouse: true,
-        delay: 500
-      }
+        delay: 5000
+      },
+      // type: 'point',
+      cluster: {
+        fitOnDoubleClick: true
+      },
 
+      // timeAxis: {
+      //   scale: 'hour',
+      // },
       // configure: true
     };
 
@@ -172,15 +180,39 @@ export class NodeVisTimeline extends React.Component {
     this.props.client.query({query: getAllNodesQuery}).then((res) => this.updateNodes(res.data.getAllNodes));
 
     this.timeline = new window.vis.Timeline(container, this.dataset, options);
+    const currentTime = this.timeline.getCurrentTime();
+    this.timeline.setWindow(currentTime-3*3600*1000, currentTime+3600*1000);
+
+    window.addEventListener("keydown", (e) => {
+      debugger;
+
+      if (e.key == "ArrowRight" || e.key == "ArrowLeft") {
+        const currentIds = this.timeline.getSelection();
+        const maxId = this.timeline.itemsData.length;
+        let currentId = 1;
+        if (currentIds.length > 0) {
+          if (e.key == "ArrowRight") {
+            currentId = (currentIds[currentIds.length-1] + 1) % (maxId);
+          } else {
+            currentId = (maxId + currentIds[currentIds.length-1] - 1) % (maxId);
+          }
+        }
+        this.timeline.setSelection(currentId, {focus: true});
+      } 
+      else if (e.key == "h") {
+        this.timeline.fit();
+      }
+    });
   }
 
   render() {
     return (
       <>
-<script type="text/javascript" src="//unpkg.com/vis-timeline@latest/dist/vis-timeline-graph2d.min.js"></script> 
-  <link href="//unpkg.com/vis-timeline@latest/dist/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
         <div id="vis-timeline" />
+        <div id="node-info" />
       </>
     );
   }
 }
+
+
