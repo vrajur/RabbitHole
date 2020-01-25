@@ -5,7 +5,7 @@ import './App.css';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 
-import { NodeList, NodeGraph } from "./NodeComponents.js";
+import { NodeList, NodeGraph, NodeVisTimeline } from "./NodeComponents.js";
 
 
 const client = new ApolloClient({
@@ -19,7 +19,7 @@ function App() {
     <ApolloProvider client={client} className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <NodeGraph client={client} />
+        <NodeVisTimeline client={client} />
       </header>
     </ApolloProvider>
   );

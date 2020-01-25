@@ -7,8 +7,8 @@ async function testConnection() {
   const client = await pool.connect();
   console.log("CONNECTION OPEN");
 
-  const res = await client.query('SELECT url FROM "public"."Nodes"');
-  console.log(res.rows[0].url);
+  const res = await client.query('SELECT * FROM "public"."Nodes"');
+  console.log(res.rows[0]);
   
   await client.release();
   console.log("CONNECTION CLOSED");
@@ -30,7 +30,8 @@ class pgAPI extends DataSource {
 			id: node.node_id,
 			url: node.url,
 			isStarred: node.is_starred,
-			visits: node.visits
+			visits: node.visits,
+			timestamp: node.timestamp
 		}
 	}
 
@@ -50,7 +51,7 @@ class pgAPI extends DataSource {
 	}
 
 	async addNode({ url }) {
-		const res = await this.pool.query(`INSERT INTO "public"."Nodes" (node_id, url, is_starred, visits) VALUES (uuid_generate_v4(), '${url}', FALSE, array[]::uuid[]) RETURNING *`);
+		const res = await this.pool.query(`INSERT INTO "public"."Nodes" (node_id, url, is_starred, visits, timestamp) VALUES (uuid_generate_v4(), '${url}', FALSE, array[]::uuid[], NOW()) RETURNING *`);
 		return res.rowCount > 0 ? this.nodeReducer(res.rows[0]) : null;
 	} 
 }

@@ -36,3 +36,27 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+#vis-timeline {
+  width: 100%;
+}
+
+.vis-item.vis-box {
+  width: 45px;
+  height: 45px;
+}
+
+.vis-item.vis-box .vis-item-content {
+  display: none;
+}
+
+.vis-item.vis-box:hover {
+  width: auto;
+}
+
+.vis-item.vis-box:hover .vis-item-content {
+  display: block;
+}
+

@@ -6,12 +6,16 @@ import { useQuery } from '@apollo/react-hooks';
 
 
 import * as THREE from '../node_modules/three/build/three.min.js';
-import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
+// import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
+
+import '../node_modules/vis-timeline/dist/vis-timeline-graph2d.min.css';
+// import * as vistimeline from '../node_modules/vis-timeline';
 
 const getAllNodesQuery = gql`query {
   getAllNodes {
     id
     url
+    timestamp
   }
 }`;
 
@@ -73,7 +77,7 @@ export class NodeGraph extends React.Component {
     this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize( window.innerWidth, window.innerHeight );
-    const controls = new THREE.OrbitControls( this.camera, renderer.domElement );
+    // const controls = new THREE.OrbitControls( this.camera, renderer.domElement );
 
     // document.body.appendChild( renderer.domElement );
     // use ref as a mount point of the Three.js scene instead of the document.body
@@ -102,3 +106,81 @@ export class NodeGraph extends React.Component {
   }
 }
 
+
+export class NodeVisTimeline extends React.Component {
+
+
+  constructor(props) {
+    super(props);
+    this.state = {nodes: []};
+    this.updateNodes = this.updateNodes.bind(this);
+    this.timeline = null;
+    this.dataset = null;
+  }
+
+  updateNodes(nodeList) {
+    this.setState({
+      nodes: nodeList,
+    });
+
+    let items = [];
+
+    let maxId = this.timeline.itemsData.length > 0 ? this.timeline.itemsData.max('id').id : 0;
+    let lastTimestamp = null;
+    let groupId = 0;
+    for (let node of nodeList) {
+      maxId += 1;
+
+      // if ( lastTimestamp == null || Math.abs(node.timestamp - lastTimestamp) < 1000 ) {
+      //   // Keep same groupId
+      // } else {
+      //   groupId += 1;
+      // }
+      groupId += 1;
+
+      items.push({id: maxId, title: node.timestamp, content: node.url, start: node.timestamp,  group: groupId});
+      lastTimestamp = node.timestamp;
+    }
+
+    this.timeline.itemsData.add(items);
+
+  }
+
+  componentDidMount() {
+    const container = document.getElementById('vis-timeline');
+
+    this.dataset = new window.vis.DataSet([]);
+
+    const options = {
+      width: '100%',
+      autoResize: false,
+      maxHeight: '400px',
+      zoomKey: 'shiftKey', 
+      horizontalScroll: true,
+      rollingMode: {
+        follow: false
+      },
+      tooltip: {
+        followMouse: true,
+        delay: 500
+      }
+
+      // configure: true
+    };
+
+    // Subscribe to node data:
+    this.props.client.query({query: getAllNodesQuery}).then((res) => this.updateNodes(res.data.getAllNodes));
+
+    this.timeline = new window.vis.Timeline(container, this.dataset, options);
+  }
+
+  render() {
+    return (
+      <>
+<script type="text/javascript" src="//unpkg.com/vis-timeline@latest/dist/vis-timeline-graph2d.min.js"></script> 
+  <link href="//unpkg.com/vis-timeline@latest/dist/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+        <div id="vis-timeline" />
+      </>
+    );
+  }
+}

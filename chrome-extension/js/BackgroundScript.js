@@ -36,18 +36,14 @@ async function getAllNodes() {
 }
 
 async function addNode(url) {
-	// const body = {
-	// 	mutation: `{ 
-	// 		addNode(url: "example.com") { 
-	// 			id 
-	// 			url 
-	// 		} 
-	// 	}`
-	// };
+
+	if (!url) {
+		return null;
+	}
 
 	const body = {
 		query: `mutation {
-			addNode(url: "jalapeno.com") {
+			addNode(url: "${url}") {
 				id
 			}
 		}`
@@ -56,12 +52,19 @@ async function addNode(url) {
 	return (await sendRequest(body)).data;
 }
 
-(async () => {
-	let nodes = await getAllNodes();
-	console.log(`getAllNodes: `, nodes);
+// Immediately Executed Function
+// (async () => {
+// 	let nodes = await getAllNodes();
+// 	console.log(`getAllNodes: `, nodes);
 
 
-	let node = await addNode();
-	console.log(`addNode: `, node);
+// 	let node = await addNode();
+// 	console.log(`addNode: `, node);
 
-})();
+// })();
+
+
+chrome.webNavigation.onCompleted.addListener(async (e) => {
+	let node = await addNode(e.url);
+	console.log("Added Node: ", node);
+});
