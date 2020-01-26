@@ -1,0 +1,53 @@
+#vis-timeline {
+  width: 95%;
+}
+
+.vis-item.vis-point {
+/*  width: 45px;
+  height: 45px;*/
+  font-size: 10pt;
+  max-width: 250px;
+}
+
+.vis-item.vis-point:hover {
+  width: auto;
+  max-width: none;
+  /*z-index: -1;*/
+}
+
+.vis-item.vis-point:hover .vis-item-content {
+  display: block;
+  /*z-index: -1;*/
+}
+
+.hidden {
+  display: none;
+}
+
+.vis-item.vis-selected {
+  max-width: none;
+}
+
+
+#node-info {
+  width: 100%;
+  height: 400px;
+  border-style: solid;
+}
+
+.node-link {
+  width: inherit;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.node-link:hover {
+  color: blue;
+}
+
+#timeline-info-table {
+  width: 100%;
+  font-size: 12pt;
+}

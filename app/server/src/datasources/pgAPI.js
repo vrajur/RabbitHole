@@ -46,8 +46,13 @@ class pgAPI extends DataSource {
 	}
 
 	async getAllNodes() {
-		const res = await this.pool.query(`SELECT * FROM "public"."Nodes"`);
+		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" ORDER BY timestamp ASC`);
 		return Array.isArray(res.rows) ? res.rows.map(node => this.nodeReducer(node)) : [];
+	}
+
+	async getMostRecentNodes( n ) {
+		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" ORDER BY timestamp DESC LIMIT ${n}`);
+		return Array.isArray(res.rows) ? res.rows.map((node, idx, array) => this.nodeReducer(array[array.length-1-idx])) : [];
 	}
 
 	async addNode({ url }) {

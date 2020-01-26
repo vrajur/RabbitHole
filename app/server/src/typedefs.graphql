@@ -61,6 +61,7 @@ union NodeUnion = Node | SearchNode
 type Query {
 	hello: String
 	getAllNodes: [Node]
+	getMostRecentNodes(n: Int): [Node]
 }
 
 type Mutation {

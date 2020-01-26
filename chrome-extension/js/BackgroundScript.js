@@ -1,8 +1,8 @@
 console.log("Hello world from the background script!");
 
+let currentNode = null;
 
 // Query to get all nodes:
-
 const url = "http://localhost:4000/";
 const method = "POST";
 const headers = {
@@ -45,6 +45,7 @@ async function addNode(url) {
 		query: `mutation {
 			addNode(url: "${url}") {
 				id
+				isStarred
 			}
 		}`
 	}
@@ -67,4 +68,17 @@ async function addNode(url) {
 chrome.webNavigation.onCompleted.addListener(async (e) => {
 	let node = await addNode(e.url);
 	console.log("Added Node: ", node);
+	currentNode = node;
 });
+
+// chrome.extension.onConnect.addListener(function(port) {
+// 	console.log("Connected .....");
+//     port.onMessage.addListener(function(msg) {
+//     	console.log("message recieved:" + msg);
+
+//     	if (msg == 'handshake') {
+//     		port.postMessage({msg: 'node-state', data: currentNode});
+//     	}
+//         port.postMessage("Hi Popup.js");
+//     });
+// });

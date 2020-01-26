@@ -1,4 +1,6 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
+import "./NodeComponents.css";
 
 import { gql } from 'apollo-boost';
 import { Query } from '@apollo/react-components';
@@ -13,6 +15,14 @@ import '../node_modules/vis-timeline/dist/vis-timeline-graph2d.min.css';
 
 const getAllNodesQuery = gql`query {
   getAllNodes {
+    id
+    url
+    timestamp
+  }
+}`;
+
+const getMostRecentNodesQuery = gql`query {
+  getMostRecentNodes(n: 200) {
     id
     url
     timestamp
@@ -116,6 +126,7 @@ export class NodeVisTimeline extends React.Component {
     this.updateNodes = this.updateNodes.bind(this);
     this.timeline = null;
     this.dataset = null;
+    this.hideUnselected = false;
   }
 
   updateNodes(nodeList) {
@@ -147,6 +158,29 @@ export class NodeVisTimeline extends React.Component {
   }
 
   componentDidMount() {
+    const toggleButton = document.getElementById("toggle-hide-unselected");
+    toggleButton.addEventListener('mouseup', () => {
+      this.hideUnselected = !this.hideUnselected;
+      let allElems = document.getElementsByClassName("vis-item vis-point");
+      if (allElems.length == 0) {
+        return;
+      }
+      if (this.hideUnselected) {
+        for (let elem of allElems) {
+          if (!elem.classList.contains('vis-selected')) {
+            console.log(elem.style.display);
+            elem.style.display = 'none';
+          }
+        }
+      } 
+      else {
+        for (let elem of allElems) {
+          elem.style.display = '';
+        }
+      }
+    });
+
+
     const container = document.getElementById('vis-timeline');
 
     this.dataset = new window.vis.DataSet([]);
@@ -155,7 +189,7 @@ export class NodeVisTimeline extends React.Component {
       align: 'left',
       width: '100%',
       autoResize: false,
-      maxHeight: '400px',
+      height: '400px',
       zoomKey: 'shiftKey', 
       horizontalScroll: true,
       rollingMode: {
@@ -165,9 +199,14 @@ export class NodeVisTimeline extends React.Component {
         followMouse: true,
         delay: 5000
       },
-      // type: 'point',
-      cluster: {
-        fitOnDoubleClick: true
+      type: 'point',
+      multiselect: true,
+      // cluster: {
+      //   fitOnDoubleClick: true
+      // },
+
+      template: (item, element, data) => {
+        return ReactDOM.render(<a href={item.content} target="_blank" className="node-link">{item.content}</a>, element);
       },
 
       // timeAxis: {
@@ -177,15 +216,33 @@ export class NodeVisTimeline extends React.Component {
     };
 
     // Subscribe to node data:
-    this.props.client.query({query: getAllNodesQuery}).then((res) => this.updateNodes(res.data.getAllNodes));
+    this.props.client.query({query: getMostRecentNodesQuery}).then((res) => this.updateNodes(res.data.getMostRecentNodes));
 
     this.timeline = new window.vis.Timeline(container, this.dataset, options);
     const currentTime = this.timeline.getCurrentTime();
-    this.timeline.setWindow(currentTime-3*3600*1000, currentTime+3600*1000);
+    let startTime = currentTime-3*3600*1000;
+    let endTime = currentTime+3600*1000;
+    this.timeline.setWindow(startTime, endTime);
+
+    this.timeline.on("changed", () => {
+      const tableElement = document.getElementById("count-nodes-visible-val");
+      tableElement.innerHTML = this.timeline.getVisibleItems().length;
+
+      const windowStartElement = document.getElementById("window-start");
+      const windowEndElement = document.getElementById("window-end");
+
+      const windowRange = this.timeline.getWindow();
+
+      windowStartElement.innerHTML = windowRange.start;
+      windowEndElement.innerHTML = windowRange.end;
+
+    });
+    this.timeline.on("currentTimeTick", () => {
+      const tableElement = document.getElementById("current-timeline-time-val");
+      tableElement.innerHTML = this.timeline.getCurrentTime();
+    });
 
     window.addEventListener("keydown", (e) => {
-      debugger;
-
       if (e.key == "ArrowRight" || e.key == "ArrowLeft") {
         const currentIds = this.timeline.getSelection();
         const maxId = this.timeline.itemsData.length;
@@ -197,10 +254,25 @@ export class NodeVisTimeline extends React.Component {
             currentId = (maxId + currentIds[currentIds.length-1] - 1) % (maxId);
           }
         }
-        this.timeline.setSelection(currentId, {focus: true});
+        this.timeline.setSelection(currentId, {focus: false});
+        const selection = this.timeline.getSelection();
+        this.timeline.focus(selection, {zoom: false});
       } 
+      else if (e.key == "f") {
+        const selection = this.timeline.getSelection();
+        this.timeline.focus(selection, {zoom: false});
+      }
       else if (e.key == "h") {
         this.timeline.fit();
+      }
+      else if (e.key == "c") {
+        const currentTime = this.timeline.getCurrentTime();
+        this.timeline.moveTo(currentTime);
+      }
+      else if (e.key == "z") {
+        this.timeline.zoomIn(1.0);
+      } else if (e.key == "x") {
+        this.timeline.zoomOut(1.0);
       }
     });
   }
@@ -208,8 +280,30 @@ export class NodeVisTimeline extends React.Component {
   render() {
     return (
       <>
+        <button id='toggle-hide-unselected'> Toggle Hide Unselected </button>
         <div id="vis-timeline" />
-        <div id="node-info" />
+        <div id="timeline-info">
+          <table id='timeline-info-table'>
+            <tbody>
+              <tr>
+               <td> <b>Current Time</b> </td>
+               <td id="current-timeline-time-val" /> 
+              </tr>
+              <tr>
+               <td> <b>Window Start Time</b> </td>
+               <td id="window-start" /> 
+              </tr>
+              <tr>
+               <td> <b>Window End Time</b> </td>
+               <td id="window-end" /> 
+              </tr>
+              <tr> 
+                <td> <b>Nodes Visible</b> </td>
+                <td> <span id="count-nodes-visible-val" align='right' /> Nodes </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </>
     );
   }

@@ -28,6 +28,9 @@ const resolvers = {
     getAllNodes: async (_, __, { dataSources }) => {
       return dataSources.pgAPI.getAllNodes();
     },
+    getMostRecentNodes: async (_, { n }, { dataSources }) => {
+      return dataSources.pgAPI.getMostRecentNodes(n);
+    }
   },
   Mutation: {
     addNode: (_, { url }, { dataSources }) => {
