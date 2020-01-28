@@ -1,10 +1,8 @@
 console.log("Hello world from the background script!");
-import * as Utils from './Utils.js';
-
+import { ServerAPI } from "./ServerAPI.js";
 
 const nodeDirectory = {};
 let currentNode = null;
-
 
 
 // Immediately Executed Function
@@ -20,7 +18,7 @@ let currentNode = null;
 
 
 chrome.webNavigation.onCompleted.addListener(async (e) => {
-	let node = await Utils.addNode(e.url);
+	let node = await ServerAPI.addNode(e.url);
 	console.log("Added Node: ", node);
 	currentNode = node;
 });
