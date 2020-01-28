@@ -1,8 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
 const fs = require('fs');
 
-console.log("Launch with: PGUSER=postgres PGHOST=localhost PGPASSWORD=maddie17 PGDATABASE=Rabbithole-proto PGPORT=5432 node src/app.js ");
-
 // The GraphQL schema
 const schemaText = fs.readFileSync('./src/typedefs.graphql');
 const typeDefs = gql`${schemaText}`;
