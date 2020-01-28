@@ -39,15 +39,101 @@ export class ServerAPI {
 					isStarred
 				}
 			}`
-		}
+		};
 
 		return (await ServerAPI.sendRequest(body)).data.addNode;
 	}
 
-	static async getOrCreateNode(url) {
+	static async getOrCreateNodeDataWithoutVisits(url) {
 
-		// TODO 
+		if (!url) { return null; }
 
+		const body = {
+			query: `mutation {
+				getOrCreateNode(url: "${url}") {
+					id
+					url
+					isStarred
+				}
+			}`
+		};
+
+		// Get query results
+		let nodeData = null;
+		const queryResult = (await ServerAPI.sendRequest(body)).data.getOrCreateNode;
+
+		// Populate Node Data using Query Results:
+		if (queryResult) {
+			nodeData = {
+				nodeId: null,
+				url: null,
+				isStarred: null,
+			};
+
+			debugger;
+			nodeData.nodeId = queryResult.id;
+			nodeData.url = queryResult.url;
+			nodeData.isStarred = queryResult.isStarred;
+		}
+
+		return nodeData;
+	}
+
+	static async getLastNodeVisitId(nodeId) {
+
+		if (!nodeId) { return null; }
+		
+		const body = {
+			query: `query {
+				getLastNodeVisitId(nodeId: "${nodeId}") { 
+					id
+				}
+			}`
+		}
+
+		// Get query results
+		const queryResult = (await ServerAPI.sendRequest(body)).data.getLastNodeVisitId;
+
+		return queryResult ? queryResult.id : null;
+	}
+
+	static async getNodeVisit(nodeVisitId) {
+		
+	}
+
+	static async getLastNodeVisit(nodeId) {
+
+		if (!nodeId) { return null; }
+
+		const body = {
+			query: `query {
+				getLastNodeVisit(nodeId: "${nodeId}") {
+					id
+					nodeId
+					timestamp
+				}
+			}`
+		};
+
+		// Get query results
+		let nodeVisitData = null;
+		const queryResult = (await ServerAPI.sendRequest(body)).data.getLastNodeVisit;
+
+		// Populate Node Visit Data using Query Results:
+		if (queryResult) {
+			
+			nodeVisitData = {
+				nodeId: null,
+				nodeVisitId: null,
+				timestamp: null
+			}
+
+			nodeVisitData.nodeVisitId = id;
+			nodeVisitData.nodeId = queryResult.nodeId;
+			nodeVisitData.timestamp = queryResult.timestamp;
+		}
+
+		return nodeVisitData;
 	}
 
 }

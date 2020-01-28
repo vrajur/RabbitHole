@@ -33,6 +33,9 @@ const resolvers = {
   Mutation: {
     addNode: (_, { url }, { dataSources }) => {
       return dataSources.pgAPI.addNode({url: url});
+    }, 
+    getOrCreateNode: (_, { url }, { dataSources }) => {
+      return dataSources.pgAPI.getOrCreateNode({url: url});
     }
   },
   NodeUnion: {

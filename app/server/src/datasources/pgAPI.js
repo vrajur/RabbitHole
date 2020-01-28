@@ -56,9 +56,20 @@ class pgAPI extends DataSource {
 	}
 
 	async addNode({ url }) {
+		console.log('addNode - url: ', url);
 		const res = await this.pool.query(`INSERT INTO "public"."Nodes" (node_id, url, is_starred, visits, timestamp) VALUES (uuid_generate_v4(), '${url}', FALSE, array[]::uuid[], NOW()) RETURNING *`);
-		return res.rowCount > 0 ? this.nodeReducer(res.rows[0]) : null;
+		return res.rows.length > 0 ? this.nodeReducer(res.rows[0]) : null;
 	} 
+
+	async getOrCreateNode({ url }) {
+		// Strip http and https from beginning of url
+		const cleanedUrl = url.replace(/^(https:\/\/|http:\/\/)/, '');
+		console.log('cleaned url: ', cleanedUrl);
+		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url LIKE '${cleanedUrl}'`);
+		console.log('result rowcount: ', res.rowCount);
+		console.log('result rows: ', res.rows);
+		return res.rows.length === 0 ? await this.addNode({url: url}) : this.nodeReducer(res.rows[0]); // Add node if no result found, otherwise return result
+	}
 }
 
 module.exports = pgAPI;

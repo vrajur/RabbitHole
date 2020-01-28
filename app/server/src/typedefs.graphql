@@ -66,4 +66,5 @@ type Query {
 
 type Mutation {
 	addNode(url: String) : Node 
+	getOrCreateNode(url: String) : Node!
 }
