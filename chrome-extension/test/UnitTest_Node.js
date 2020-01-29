@@ -18,18 +18,18 @@ describe("Node Test Suite", function() {
 	it("test node initialization", async () => {
 		await this.Node.initialize("test.com");
 		const nodeVisit = new NodeVisit();
-		await nodeVisit.initialize('9377bc40-90ea-4ff3-a697-e80c4c64d7a9');
+		await nodeVisit.initialize('db1d6d78-ee38-43cf-b508-cf466e2d3934');
 
-		expect(this.Node._nodeId).not.toBe('9377bc40-90ea-4ff3-a697-e80c4c64d7a9');
+		expect(this.Node._nodeId).toBe('9377bc40-90ea-4ff3-a697-e80c4c64d7a9');
 		expect(this.Node._url).toBe("test.com");
 		expect(this.Node._isStarred).toBe(false);
-		expect(this.Node._previousNodeVisit).toBe(nodeVisit);
+		expect(this.Node._previousNodeVisit).toEqual(nodeVisit);
 	});
 
 });
 
 
-xdescribe("NodeVisit Test Suite", function() {
+describe("NodeVisit Test Suite", function() {
 
 	beforeEach(() => {
 		this.NodeVisit = new NodeVisit();
@@ -43,10 +43,11 @@ xdescribe("NodeVisit Test Suite", function() {
 	});
 
 	it("test node visit initialization", async () => {
-		await this.NodeVisit.initialize('9377bc40-90ea-4ff3-a697-e80c4c64d7a9');
+		await this.NodeVisit.initialize('db1d6d78-ee38-43cf-b508-cf466e2d3934');
 		expect(this.NodeVisit._nodeId).toBe('9377bc40-90ea-4ff3-a697-e80c4c64d7a9');
-		expect(this.NodeVisit._nodeVisitId).toBe('TODO');
-		expect(this.NodeVisit._timestamp).toBe(new Date('2020-01-24 19:55:52.265825'));
+		expect(this.NodeVisit._nodeVisitId).toBe('db1d6d78-ee38-43cf-b508-cf466e2d3934');
+		expect(this.NodeVisit._timestamp).toBe('2020-01-25T00:55:52.265Z');
+		// expect(this.NodeVisit._timestamp).toBe('2020-01-24 19:55:52.265825');
 	});
 
 });

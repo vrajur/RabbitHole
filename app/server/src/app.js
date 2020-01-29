@@ -28,6 +28,12 @@ const resolvers = {
     },
     getMostRecentNodes: async (_, { n }, { dataSources }) => {
       return dataSources.pgAPI.getMostRecentNodes(n);
+    },
+    getLastNodeVisitId: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.getLastNodeVisitId({nodeId: nodeId});
+    }, 
+    getNodeVisit: (_, { nodeVisitId }, { dataSources }) => {
+      return dataSources.pgAPI.getNodeVisit({nodeVisitId: nodeVisitId});
     }
   },
   Mutation: {

@@ -35,6 +35,20 @@ class pgAPI extends DataSource {
 		}
 	}
 
+	nodeVisitReducer(nodeVisit) {
+		return {
+			id: nodeVisit.node_visit_id,
+			nodeId: nodeVisit.node_id,
+			timestamp: nodeVisit.timestamp,
+			domCache: nodeVisit.dom_cache,
+			pageTextCache: nodeVisit.page_text_cache,
+			faviconPath: nodeVisit.favicon_path,
+			markups: nodeVisit.markups,
+			location: nodeVisit.location,
+			actionEvents: nodeVisit.actionEvents
+		}
+	}
+
 	/**
     * This is a function that gets called by ApolloServer when being setup.
     * This function gets called with the datasource config including things
@@ -67,8 +81,20 @@ class pgAPI extends DataSource {
 		console.log('cleaned url: ', cleanedUrl);
 		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url LIKE '${cleanedUrl}'`);
 		console.log('result rowcount: ', res.rowCount);
-		console.log('result rows: ', res.rows);
 		return res.rows.length === 0 ? await this.addNode({url: url}) : this.nodeReducer(res.rows[0]); // Add node if no result found, otherwise return result
+	}
+
+	async getLastNodeVisitId({ nodeId }) {
+		console.log('getLastNodeVisitId - nodeId: ', nodeId)
+		const res = await this.pool.query(`SELECT visits[array_upper(visits, 1)] FROM "public"."Nodes" WHERE node_id = '${nodeId}'`);
+		console.log("getLastNodeVisitID - result: ", res.rows[0].visits);
+		return res.rows.length > 0 ? res.rows[0].visits : null;
+	}
+
+	async getNodeVisit({ nodeVisitId }) {
+		const res = await this.pool.query(`SELECT * FROM public."NodeVisits" WHERE node_visit_id = '${nodeVisitId}'`);
+		console.log("GetNodeVisit: ", res.rows[0]);
+		return res.rows.length === 0 ? null : this.nodeVisitReducer(res.rows[0]);
 	}
 }
 

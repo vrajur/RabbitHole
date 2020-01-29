@@ -14,7 +14,6 @@ export class Node {
 		const nodeData = await ServerAPI.getOrCreateNodeDataWithoutVisits(url);
 
 		// Store retrieved fields in newly created node object
-		debugger;
 		this._nodeId = nodeData.nodeId;
 		this._url = nodeData.url;
 		this._isStarred = nodeData.isStarred;
@@ -22,20 +21,26 @@ export class Node {
 		// Populate node with previous node visit data:
 		const previousNodeVisitId = await ServerAPI.getLastNodeVisitId(nodeData.nodeId);
 		this._previousNodeVisit = new NodeVisit();
-		this._previousNodeVisit.initalize(previousNodeVisitId);
+		this._previousNodeVisit.initialize(previousNodeVisitId);
 	}
 
 }
 
 export class NodeVisit {
 	constructor() {
-		this._nodeId = null;
 		this._nodeVisitId = null;
+		this._nodeId = null;
 		this._timestamp = null;
 	}
 
 	async initialize(nodeVisitId) {
-		// Query timestamp from server
+		const nodeVisitData = await ServerAPI.getNodeVisit(nodeVisitId);
+
+		// Store results:
+		this._nodeVisitId = nodeVisitData.nodeVisitId;
+		this._nodeId = nodeVisitData.nodeId;
+		this._timestamp = nodeVisitData.timestamp;
+		debugger;
 	}
 
 

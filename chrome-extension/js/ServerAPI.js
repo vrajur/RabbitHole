@@ -12,7 +12,14 @@ export class ServerAPI {
 			headers: ServerAPI._headers,
 			body: JSON.stringify(data)
 		});
-		return await response.json();
+		let result = await response.json();
+		if (result.errors) {
+			result.errors.forEach((e) => {
+				console.trace();
+				console.error("Error: ", e)
+			});
+		}
+		return result;
 	}
 
 	static async getAllNodes() {
@@ -59,22 +66,14 @@ export class ServerAPI {
 		};
 
 		// Get query results
-		let nodeData = null;
 		const queryResult = (await ServerAPI.sendRequest(body)).data.getOrCreateNode;
 
 		// Populate Node Data using Query Results:
-		if (queryResult) {
-			nodeData = {
-				nodeId: null,
-				url: null,
-				isStarred: null,
-			};
-
-			debugger;
-			nodeData.nodeId = queryResult.id;
-			nodeData.url = queryResult.url;
-			nodeData.isStarred = queryResult.isStarred;
-		}
+		const nodeData = queryResult ? {
+			nodeId: queryResult.id,
+			url: queryResult.url,
+			isStarred: queryResult.isStarred,
+		} : null;
 
 		return nodeData;
 	}
@@ -85,23 +84,49 @@ export class ServerAPI {
 		
 		const body = {
 			query: `query {
-				getLastNodeVisitId(nodeId: "${nodeId}") { 
-					id
-				}
+				getLastNodeVisitId(nodeId: "${nodeId}")
 			}`
 		}
 
 		// Get query results
 		const queryResult = (await ServerAPI.sendRequest(body)).data.getLastNodeVisitId;
+		debugger;
 
-		return queryResult ? queryResult.id : null;
+		return queryResult ? queryResult : null;
 	}
 
 	static async getNodeVisit(nodeVisitId) {
-		
+	
+		if (!nodeVisitId) { return null; }
+
+		const body = {
+			query: 	`query {
+				getNodeVisit(nodeVisitId: "${nodeVisitId}") {
+					id
+					nodeId
+					timestamp
+				}
+			}`
+		}
+
+		// Get query results
+		const queryResult = (await ServerAPI.sendRequest(body)).data.getNodeVisit;
+
+		// Populate node visit data using query results
+		const nodeVisitData = queryResult ? {
+			nodeVisitId: queryResult.id,
+			nodeId: queryResult.nodeId,
+			timestamp: queryResult.timestamp
+		} : null;
+
+		return nodeVisitData;
 	}
 
+
+	//DEPRECATED
 	static async getLastNodeVisit(nodeId) {
+
+		console.log("DEPRECATED FUNCTION: getLastNodeVisit");
 
 		if (!nodeId) { return null; }
 
@@ -131,6 +156,7 @@ export class ServerAPI {
 			nodeVisitData.nodeVisitId = id;
 			nodeVisitData.nodeId = queryResult.nodeId;
 			nodeVisitData.timestamp = queryResult.timestamp;
+			debugger;
 		}
 
 		return nodeVisitData;
