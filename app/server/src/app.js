@@ -42,6 +42,18 @@ const resolvers = {
     }, 
     getOrCreateNode: (_, { url }, { dataSources }) => {
       return dataSources.pgAPI.getOrCreateNode({url: url});
+    },
+    setNodeIsStarredValue: (_, { nodeId, isStarredValue }, { dataSources }) => {
+      return dataSources.pgAPI.setNodeIsStarredValue({ nodeId: nodeId, isStarredValue: isStarredValue });
+    },
+    addNodeVisit: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId});
+    }, 
+    addNodeVisit: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId });
+    }, 
+    addNodeVisitToNode: (_, { nodeId, nodeVisitId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisitToNode({nodeId: nodeId , nodeVisitId: nodeVisitId });
     }
   },
   NodeUnion: {

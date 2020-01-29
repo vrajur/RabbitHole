@@ -84,4 +84,7 @@ type Query {
 type Mutation {
 	addNode(url: String) : Node 
 	getOrCreateNode(url: String) : Node!
+	addNodeVisit(nodeId: String): NodeVisit
+	addNodeVisitToNode(nodeId: String, nodeVisitId: String): Node
+	setNodeIsStarredValue(nodeId: String, isStarredValue: Boolean) : Node 
 }

@@ -53,7 +53,7 @@ export class ServerAPI {
 
 	static async getOrCreateNodeDataWithoutVisits(url) {
 
-		if (!url) { return null; }
+		if (!url) { console.log(`Invalid url: ${url}`); return null; }
 
 		const body = {
 			query: `mutation {
@@ -67,6 +67,35 @@ export class ServerAPI {
 
 		// Get query results
 		const queryResult = (await ServerAPI.sendRequest(body)).data.getOrCreateNode;
+
+		// Populate Node Data using Query Results:
+		const nodeData = queryResult ? {
+			nodeId: queryResult.id,
+			url: queryResult.url,
+			isStarred: queryResult.isStarred,
+		} : null;
+
+		if (!nodeData) { console.log(`Invalid queryReponse: ${queryReponse}`)};
+
+		return nodeData;
+	}
+
+	static async setNodeIsStarredValue(nodeId, isStarredValue) {
+
+		if (!nodeId || typeof isStarredValue !== 'boolean') { console.log(`Invalid input: nodeId: ${nodeId} isStarredValue: ${isStarredValue}`); return null; }
+
+		const body = {
+			query: `mutation {
+				setNodeIsStarredValue(nodeId: "${nodeId}", isStarredValue: ${isStarredValue}) {
+					id
+					url
+					isStarred
+				}
+			}`
+		};
+
+		// Get query results
+		const queryResult = (await ServerAPI.sendRequest(body)).data.setNodeIsStarredValue;
 
 		// Populate Node Data using Query Results:
 		const nodeData = queryResult ? {
@@ -122,11 +151,64 @@ export class ServerAPI {
 		return nodeVisitData;
 	}
 
+	static async addNodeVisit(nodeId) {
+
+		if (!nodeId) { console.log("Invalid nodeId: ", nodeId); return null; }
+
+		const body = {
+			query: 	`mutation {
+				addNodeVisit(nodeId: "${nodeId}") {
+					id
+					nodeId
+					timestamp
+				}
+			}`
+		}
+
+		// Get query results:
+		const queryResult = (await ServerAPI.sendRequest(body)).data.addNodeVisit;
+
+		// Populate node visit data using query results
+		const nodeVisitData = queryResult ? {
+			nodeVisitId: queryResult.id,
+			nodeId: queryResult.nodeId,
+			timestamp: queryResult.timestamp
+		} : null;
+
+		return nodeVisitData;
+	}
+
+	static async addNodeVisitToNode(nodeId, nodeVisitId) {
+
+		if (!nodeId || !nodeVisitId) { console.log(`Invalid inputs: nodeId: ${nodeId} nodeVisitId: ${nodeVisitId}`); return null; }
+
+		const body = {
+			query: 	`mutation {
+				addNodeVisitToNode(nodeId: "${nodeId}", nodeVisitId: "${nodeVisitId}") {
+					id
+					url 
+					isStarred
+				}
+			}`
+		}
+
+		// Get query results from sever:
+		const queryResult = (await ServerAPI.sendRequest(body)).data.addNodeVisitToNode;
+
+		// Populate node visit data using query results
+		const nodeData = queryResult ? {
+			nodeId: queryResult.id,
+			url: queryResult.url,
+			isStarred: queryResult.isStarred
+		} : null;
+
+		return nodeData;
+	}
 
 	//DEPRECATED
 	static async getLastNodeVisit(nodeId) {
 
-		console.log("DEPRECATED FUNCTION: getLastNodeVisit");
+		console.warn("DEPRECATED FUNCTION: getLastNodeVisit");
 
 		if (!nodeId) { return null; }
 

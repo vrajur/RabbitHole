@@ -79,9 +79,15 @@ class pgAPI extends DataSource {
 		// Strip http and https from beginning of url
 		const cleanedUrl = url.replace(/^(https:\/\/|http:\/\/)/, '');
 		console.log('cleaned url: ', cleanedUrl);
-		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url LIKE '${cleanedUrl}'`);
+		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url LIKE '%${cleanedUrl}'`);
 		console.log('result rowcount: ', res.rowCount);
 		return res.rows.length === 0 ? await this.addNode({url: url}) : this.nodeReducer(res.rows[0]); // Add node if no result found, otherwise return result
+	}
+
+	async setNodeIsStarredValue({ nodeId, isStarredValue }) {
+		const res = await this.pool.query(`UPDATE "public"."Nodes" SET is_starred = $1 WHERE node_id = $2 RETURNING *`, [isStarredValue, nodeId]);
+		console.log("setNodeIsStarredValue -  results: ", res.rows[0])
+		return res.rows.length > 0 ? this.nodeReducer(res.rows[0]) : null;
 	}
 
 	async getLastNodeVisitId({ nodeId }) {
@@ -95,6 +101,18 @@ class pgAPI extends DataSource {
 		const res = await this.pool.query(`SELECT * FROM public."NodeVisits" WHERE node_visit_id = '${nodeVisitId}'`);
 		console.log("GetNodeVisit: ", res.rows[0]);
 		return res.rows.length === 0 ? null : this.nodeVisitReducer(res.rows[0]);
+	}
+
+	async addNodeVisit({ nodeId }) {
+		const res = await this.pool.query(`INSERT INTO public."NodeVisits" (node_visit_id, node_id, timestamp) VALUES (uuid_generate_v4(), $1, NOW()) RETURNING *`, [nodeId]);
+		console.log("addNodeVisit: ", res.rows[0]);
+		return res.rows.length > 0 ? this.nodeVisitReducer(res.rows[0]) : null;
+	}
+
+	async addNodeVisitToNode({ nodeId, nodeVisitId }) {
+		const res1 = await this.pool.query(`UPDATE public."Nodes" SET visits = array_append(visits, $1	) WHERE node_id = $2 RETURNING *`, [nodeVisitId, nodeId]);
+		const res2 = await this.pool.query(`UPDATE public."NodeVisits" SET node_id = $1 WHERE node_visit_id = $2`, [nodeId, nodeVisitId]);
+		return res1.rows.length > 0 ? this.nodeReducer(res1.rows[0]) : null;
 	}
 }
 
