@@ -28,11 +28,32 @@ const resolvers = {
     },
     getMostRecentNodes: async (_, { n }, { dataSources }) => {
       return dataSources.pgAPI.getMostRecentNodes(n);
+    },
+    getLastNodeVisitId: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.getLastNodeVisitId({nodeId: nodeId});
+    }, 
+    getNodeVisit: (_, { nodeVisitId }, { dataSources }) => {
+      return dataSources.pgAPI.getNodeVisit({nodeVisitId: nodeVisitId});
     }
   },
   Mutation: {
     addNode: (_, { url }, { dataSources }) => {
       return dataSources.pgAPI.addNode({url: url});
+    }, 
+    getOrCreateNode: (_, { url }, { dataSources }) => {
+      return dataSources.pgAPI.getOrCreateNode({url: url});
+    },
+    setNodeIsStarredValue: (_, { nodeId, isStarredValue }, { dataSources }) => {
+      return dataSources.pgAPI.setNodeIsStarredValue({ nodeId: nodeId, isStarredValue: isStarredValue });
+    },
+    addNodeVisit: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId});
+    }, 
+    addNodeVisit: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId });
+    }, 
+    addNodeVisitToNode: (_, { nodeId, nodeVisitId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisitToNode({nodeId: nodeId , nodeVisitId: nodeVisitId });
     }
   },
   NodeUnion: {

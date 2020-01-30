@@ -1,6 +1,7 @@
 
 scalar Timestamp
 scalar NodeRef
+scalar Location
 
 enum EventType {
 	NAVIGATE_TO
@@ -28,8 +29,22 @@ type TogglePageFlagEvent implements LoggingEvent {
 	node: NodeRef
 }
 
+union ActionEvent = NavigateToEvent | TogglePageFlagEvent 
+
+type Markup {
+	id: String
+}
+
 type NodeVisit {
 	id: String
+	nodeId: String
+	timestamp: Timestamp
+	domCache: String
+	pageTextCache: String
+	faviconPath: String
+	markups: [Markup]
+	location: Location
+	actionEvents: [ActionEvent]
 }
 
 interface BaseNode {
@@ -62,8 +77,14 @@ type Query {
 	hello: String
 	getAllNodes: [Node]
 	getMostRecentNodes(n: Int): [Node]
+	getLastNodeVisitId(nodeId: String): String
+	getNodeVisit(nodeVisitId: String): NodeVisit
 }
 
 type Mutation {
 	addNode(url: String) : Node 
+	getOrCreateNode(url: String) : Node!
+	addNodeVisit(nodeId: String): NodeVisit
+	addNodeVisitToNode(nodeId: String, nodeVisitId: String): Node
+	setNodeIsStarredValue(nodeId: String, isStarredValue: Boolean) : Node 
 }

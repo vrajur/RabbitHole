@@ -18,6 +18,7 @@ const getAllNodesQuery = gql`query {
     id
     url
     timestamp
+    isStarred
   }
 }`;
 
@@ -26,6 +27,7 @@ const getMostRecentNodesQuery = gql`query {
     id
     url
     timestamp
+    isStarred
   }
 }`;
 
@@ -149,7 +151,7 @@ export class NodeVisTimeline extends React.Component {
       // }
       groupId += 1;
 
-      items.push({id: maxId, title: node.timestamp, content: node.url, start: node.timestamp,  group: groupId});
+      items.push({id: maxId, title: node.timestamp, content: node.url, isStarred: node.isStarred, start: node.timestamp,  group: groupId});
       lastTimestamp = node.timestamp;
     }
 
@@ -206,7 +208,12 @@ export class NodeVisTimeline extends React.Component {
       // },
 
       template: (item, element, data) => {
-        return ReactDOM.render(<a href={item.content} target="_blank" className="node-link">{item.content}</a>, element);
+        return ReactDOM.render(
+          <a  href={item.content} 
+              target="_blank"   
+              className={item.isStarred ? "node-link starred-node" : "node-link"}>
+              {item.content}
+          </a>, element);
       },
 
       // timeAxis: {
@@ -230,11 +237,13 @@ export class NodeVisTimeline extends React.Component {
 
       const windowStartElement = document.getElementById("window-start");
       const windowEndElement = document.getElementById("window-end");
+      const timespanElement = document.getElementById("time-span-hours");
 
       const windowRange = this.timeline.getWindow();
 
       windowStartElement.innerHTML = windowRange.start;
       windowEndElement.innerHTML = windowRange.end;
+      timespanElement.innerHTML = ((windowRange.end-windowRange.start)/3600/1000).toFixed(2);
 
     });
     this.timeline.on("currentTimeTick", () => {
@@ -286,20 +295,22 @@ export class NodeVisTimeline extends React.Component {
           <table id='timeline-info-table'>
             <tbody>
               <tr>
-               <td> <b>Current Time</b> </td>
-               <td id="current-timeline-time-val" /> 
+               <td colspan='2'> <b>Current Time</b> </td>
+               <td id="current-timeline-time-val" colspan='2'/> 
               </tr>
               <tr>
-               <td> <b>Window Start Time</b> </td>
-               <td id="window-start" /> 
+               <td colspan='2'> <b>Window Start Time</b> </td>
+               <td id="window-start" colspan='2' /> 
               </tr>
               <tr>
-               <td> <b>Window End Time</b> </td>
-               <td id="window-end" /> 
+               <td colspan='2'> <b>Window End Time</b> </td>
+               <td id="window-end" colspan='2' /> 
               </tr>
               <tr> 
                 <td> <b>Nodes Visible</b> </td>
                 <td> <span id="count-nodes-visible-val" align='right' /> Nodes </td>
+                <td> <b> Time Span (hours)</b> </td>
+                <td id='time-span-hours' />
               </tr>
             </tbody>
           </table>

@@ -47,6 +47,10 @@
   color: blue;
 }
 
+.starred-node {
+  color: red;
+}
+
 #timeline-info-table {
   width: 100%;
   font-size: 12pt;

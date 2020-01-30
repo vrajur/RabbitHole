@@ -1,57 +1,10 @@
 console.log("Hello world from the background script!");
+import { ServerAPI } from "./ServerAPI.js";
+import { TabManager } from "./TabManager.js";
 
+const tabManager = new TabManager();
 let currentNode = null;
 
-// Query to get all nodes:
-const url = "http://localhost:4000/";
-const method = "POST";
-const headers = {
-	"Content-Type": "application/json"
-};
-
-async function sendRequest(data) {
-	
-	console.log("Sending: ", JSON.stringify(data));
-
-	const response = await fetch(url, {
-		method: method,
-		headers: headers,
-		body: JSON.stringify(data)
-	});
-
-	return await response.json();
-}
-
-async function getAllNodes() {
-	const body = {
-		query: `query {
-			getAllNodes {
-				id
-				url
-			}
-		}`
-	};
-	
-	return (await sendRequest(body)).data.getAllNodes;
-}
-
-async function addNode(url) {
-
-	if (!url) {
-		return null;
-	}
-
-	const body = {
-		query: `mutation {
-			addNode(url: "${url}") {
-				id
-				isStarred
-			}
-		}`
-	}
-
-	return (await sendRequest(body)).data;
-}
 
 // Immediately Executed Function
 // (async () => {
@@ -65,11 +18,58 @@ async function addNode(url) {
 // })();
 
 
-chrome.webNavigation.onCompleted.addListener(async (e) => {
-	let node = await addNode(e.url);
-	console.log("Added Node: ", node);
-	currentNode = node;
+// chrome.webNavigation.onCompleted.addListener(async (e) => {
+// 	let node = await ServerAPI.addNode(e.url);
+// 	console.log("Added Node: ", node);
+// 	currentNode = node;
+// });
+
+
+// Switch Focus:
+chrome.tabs.onActivated.addListener((activeInfo) => {
+	console.log(`Tab activated --> will run tabManager.switchFocus() -- note that the new tab's url may not be set at this point`);
+	chrome.tabs.get(activeInfo.tabId, async (tab) => {
+		console.log(`Tab retrieved --> tabManager.switchFocus(tabId=${tab.id}, url=${tab.url}) -- note that the new tab's url may not be set at this point`);
+		await tabManager.switchFocus(tab.id, tab.url);
+
+		// update content script with tabManager._currentNode.isStarred value
+		chrome.tabs.sendMessage(tabManager._activeTabId, {id: "tab-activated", data: {isStarred: tabManager._currentNode.isStarred}});
+		console.log("Sent a message to tabId: ", tabManager._activeTabId);
+	});
 });
+
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+	console.log(`Tab closed --> tabManager.closeTab(tabId=${tabId})`);
+});
+
+chrome.webNavigation.onCompleted.addListener(async (info) => {
+	console.log(`Page loaded --> tabManager.pageLoaded(tabId=${info.tabId}, url=${info.url})`);
+	await tabManager.pageLoaded(info.url);
+	chrome.tabs.sendMessage(tabManager._activeTabId, {id: "page-loaded", data: {isStarred: tabManager._currentNode.isStarred}});
+
+});
+
+chrome.tabs.onCreated.addListener((tab) => {
+	console.log(`Tab created --> tabManager.openTab(tabId=${tab.id}) -- note should always run before tabManager.switchFocus() and tabManager.pageLoaded()`);
+});
+
+chrome.tabs.onHighlighted.addListener((tab) => {
+	console.log(`Tab highlighted --> this event can be triggered for selection of multiple tabs (by holding shift key)`);
+});
+
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+	console.log("Message received: ", msg);
+	if (msg.id == "star-page") {
+		// tabManager._currentNode.setIsStarred(!tabManager._currentNode.isStarred);
+		(async () => {
+			await tabManager._currentNode.setIsStarred(!tabManager._currentNode.isStarred);
+			sendResponse({id: 'star-page-response', data: {isStarred: tabManager._currentNode.isStarred}});
+		})();
+		return true;
+	}
+});
+
 
 // chrome.extension.onConnect.addListener(function(port) {
 // 	console.log("Connected .....");
