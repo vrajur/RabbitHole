@@ -72,11 +72,16 @@ type SearchNode implements BaseNode {
 
 union NodeUnion = Node | SearchNode
 
+type NodeVisitResult {
+	nodeVisit: NodeVisit
+	node: Node
+}
 
 type Query {
 	hello: String
 	getAllNodes: [Node]
 	getMostRecentNodes(n: Int): [Node]
+	getMostRecentNodeVisits(n: Int): [NodeVisitResult]
 	getLastNodeVisitId(nodeId: String): String
 	getNodeVisit(nodeVisitId: String): NodeVisit
 }

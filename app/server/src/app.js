@@ -29,6 +29,9 @@ const resolvers = {
     getMostRecentNodes: async (_, { n }, { dataSources }) => {
       return dataSources.pgAPI.getMostRecentNodes(n);
     },
+    getMostRecentNodeVisits: async (_, { n }, { dataSources }) => {
+      return dataSources.pgAPI.getMostRecentNodeVisits(n);
+    },
     getLastNodeVisitId: (_, { nodeId }, { dataSources }) => {
       return dataSources.pgAPI.getLastNodeVisitId({nodeId: nodeId});
     }, 
