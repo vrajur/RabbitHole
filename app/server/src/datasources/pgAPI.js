@@ -79,7 +79,7 @@ class pgAPI extends DataSource {
 		// Strip http and https from beginning of url
 		const cleanedUrl = url.replace(/^(https:\/\/|http:\/\/)/, '');
 		console.log('cleaned url: ', cleanedUrl);
-		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url LIKE '%${cleanedUrl}'`);
+		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url ~ '(^|http://|https://)${cleanedUrl}'`);
 		console.log('result rowcount: ', res.rowCount);
 		return res.rows.length === 0 ? await this.addNode({url: url}) : this.nodeReducer(res.rows[0]); // Add node if no result found, otherwise return result
 	}
@@ -113,6 +113,16 @@ class pgAPI extends DataSource {
 		const res1 = await this.pool.query(`UPDATE public."Nodes" SET visits = array_append(visits, $1	) WHERE node_id = $2 RETURNING *`, [nodeVisitId, nodeId]);
 		const res2 = await this.pool.query(`UPDATE public."NodeVisits" SET node_id = $1 WHERE node_visit_id = $2`, [nodeId, nodeVisitId]);
 		return res1.rows.length > 0 ? this.nodeReducer(res1.rows[0]) : null;
+	}
+
+	async addDomCache({ nodeVisitId, domCache }) {
+		const res = await this.pool.query(`UPDATE public."NodeVisits" SET dom_cache = $1 WHERE node_visit_id = $2 RETURNING *`, [domCache, nodeVisitId]);
+		return res.rows.length > 0 ? this.nodeVisitReducer(res.rows[0]) : null;
+	}
+
+	async addFaviconPath({ nodeVisitId, faviconPath }) {
+		const res = await this.pool.query(`UPDATE public."NodeVisits" SET favicon_path = $1 WHERE node_visit_id = $2 RETURNING *`, [faviconPath, nodeVisitId]);
+		return res.rows.length > 0 ? this.nodeVisitReducer(res.rows[0]) : null;
 	}
 }
 

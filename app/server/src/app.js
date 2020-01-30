@@ -54,6 +54,12 @@ const resolvers = {
     }, 
     addNodeVisitToNode: (_, { nodeId, nodeVisitId }, { dataSources }) => {
       return dataSources.pgAPI.addNodeVisitToNode({nodeId: nodeId , nodeVisitId: nodeVisitId });
+    },
+    addDomCache: (_, { nodeVisitId, domCache }, { dataSources }) => {
+      return dataSources.pgAPI.addDomCache({nodeVisitId: nodeVisitId, domCache: domCache});
+    },
+    addFaviconPath: (_, { nodeVisitId, faviconPath }, { dataSources }) => {
+      return dataSources.pgAPI.addFaviconPath({nodeVisitId: nodeVisitId, faviconPath: faviconPath});
     }
   },
   NodeUnion: {

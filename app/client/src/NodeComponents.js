@@ -209,11 +209,15 @@ export class NodeVisTimeline extends React.Component {
 
       template: (item, element, data) => {
         return ReactDOM.render(
-          <a  href={item.content} 
-              target="_blank"   
-              className={item.isStarred ? "node-link starred-node" : "node-link"}>
-              {item.content}
-          </a>, element);
+          <span>
+            <img src={item.content} height='25' width='25' />
+            <a  href={item.content} 
+                target="_blank"   
+                className={item.isStarred ? "node-link starred-node" : "node-link"}>
+                {item.content}
+            </a>
+          </span>, 
+          element);
       },
 
       // timeAxis: {

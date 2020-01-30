@@ -60,6 +60,8 @@ export class NodeVisit {
 		this._nodeVisitId = null;
 		this._nodeId = null;
 		this._timestamp = null;
+		this._domCache = null;
+		this._faviconPath = null;
 	}
 
  	/**
@@ -95,6 +97,26 @@ export class NodeVisit {
 	get timestamp() {
 		return this._timestamp;
 	}
+
+	get domCache() {
+		return this._domCache;
+	}
+
+	get faviconPath() {
+		return this._faviconPath;
+	}
+
+	async setDomCache(domCache) {
+		const nodeVisitData = await ServerAPI.addDomCache(this.nodeVisitId, domCache);
+		this._domCache = nodeVisitData.domCache;
+	}
+
+	async setFaviconPath(faviconPath) {
+		const nodeVisitData = await ServerAPI.addFaviconPath(this.nodeVisitId, faviconPath);
+		this._faviconPath = nodeVisitData.faviconPath;
+	}
+
+
 
 	/**
 	NodeVisit.populateFromPreviousNodeVisit():

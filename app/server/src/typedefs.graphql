@@ -87,4 +87,6 @@ type Mutation {
 	addNodeVisit(nodeId: String): NodeVisit
 	addNodeVisitToNode(nodeId: String, nodeVisitId: String): Node
 	setNodeIsStarredValue(nodeId: String, isStarredValue: Boolean) : Node 
+	addDomCache(nodeVisitId: String, domCache: String) : NodeVisit
+	addFaviconPath(nodeVisitId: String, faviconPath: String) : NodeVisit
 }

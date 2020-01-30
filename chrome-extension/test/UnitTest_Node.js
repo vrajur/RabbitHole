@@ -70,4 +70,17 @@ describe("NodeVisit Test Suite", function() {
 		expect(Math.abs(new Date(this.NodeVisit._timestamp)-Date.now())).toBeLessThan(500);
 	});
 
+	it("test node visit setter", async () => {
+		await this.NodeVisit.initialize('9377bc40-90ea-4ff3-a697-e80c4c64d7a9');
+
+		expect(this.NodeVisit.domCache).toBe(null);
+		await this.NodeVisit.setDomCache("test dom cache");
+		expect(this.NodeVisit.domCache).toBe("test dom cache");
+
+		expect(this.NodeVisit.faviconPath).toBe(null);
+		await this.NodeVisit.setFaviconPath("test favicon path");
+		expect(this.NodeVisit.faviconPath).toBe("test favicon path");
+
+	});
+
 });
