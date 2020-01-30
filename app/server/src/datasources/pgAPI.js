@@ -129,7 +129,7 @@ class pgAPI extends DataSource {
 			}
  		}
 
-		return res.rows.map((nodeVisitResult) => { return this.nodeVisitResultReducer(nodeVisitResult, nodeIdxs, nodeVisitIdxs) });
+		return res.rows.map((nodeVisitResult, idx, array) => { return this.nodeVisitResultReducer(array[array.length-1-idx], nodeIdxs, nodeVisitIdxs) });
 	}
 
 	async addNode({ url }) {

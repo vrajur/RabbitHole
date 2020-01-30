@@ -31,6 +31,21 @@ const getMostRecentNodesQuery = gql`query {
   }
 }`;
 
+const getMostRecentNodeVisitResultsQuery = gql`query {
+  getMostRecentNodeVisits(n: 200) {
+    node {
+      id
+      url
+      isStarred
+    }
+    nodeVisit {
+      timestamp
+      faviconPath
+    }
+  }
+}
+`;
+
 export class NodeList extends React.Component {
 
   render() {
@@ -131,9 +146,9 @@ export class NodeVisTimeline extends React.Component {
     this.hideUnselected = false;
   }
 
-  updateNodes(nodeList) {
+  updateNodes(nodeVisitResultList) {
     this.setState({
-      nodes: nodeList,
+      nodes: nodeVisitResultList,
     });
 
     let items = [];
@@ -141,7 +156,7 @@ export class NodeVisTimeline extends React.Component {
     let maxId = this.timeline.itemsData.length > 0 ? this.timeline.itemsData.max('id').id : 0;
     let lastTimestamp = null;
     let groupId = 0;
-    for (let node of nodeList) {
+    for (let nodeVisitResult of nodeVisitResultList) {
       maxId += 1;
 
       // if ( lastTimestamp == null || Math.abs(node.timestamp - lastTimestamp) < 1000 ) {
@@ -151,8 +166,17 @@ export class NodeVisTimeline extends React.Component {
       // }
       groupId += 1;
 
-      items.push({id: maxId, title: node.timestamp, content: node.url, isStarred: node.isStarred, start: node.timestamp,  group: groupId});
-      lastTimestamp = node.timestamp;
+      items.push({
+        id: maxId, 
+        title: nodeVisitResult.nodeVisit.timestamp, 
+        content: nodeVisitResult.node.url, 
+        isStarred: nodeVisitResult.node.isStarred, 
+        faviconPath: nodeVisitResult.nodeVisit.faviconPath,
+        start: nodeVisitResult.nodeVisit.timestamp,  
+        group: groupId
+      });
+
+      lastTimestamp = nodeVisitResult.nodeVisit.timestamp;
     }
 
     this.timeline.itemsData.add(items);
@@ -209,14 +233,14 @@ export class NodeVisTimeline extends React.Component {
 
       template: (item, element, data) => {
         return ReactDOM.render(
-          <span>
-            <img src={item.content} height='25' width='25' />
+          <div>
+            <img src={item.faviconPath} height='15' width='15' />
             <a  href={item.content} 
-                target="_blank"   
-                className={item.isStarred ? "node-link starred-node" : "node-link"}>
-                {item.content}
+              target="_blank"   
+              className={item.isStarred ? "node-link starred-node" : "node-link"}>
+              {item.content}
             </a>
-          </span>, 
+          </div>, 
           element);
       },
 
@@ -227,7 +251,7 @@ export class NodeVisTimeline extends React.Component {
     };
 
     // Subscribe to node data:
-    this.props.client.query({query: getMostRecentNodesQuery}).then((res) => this.updateNodes(res.data.getMostRecentNodes));
+    this.props.client.query({query: getMostRecentNodeVisitResultsQuery}).then((res) => this.updateNodes(res.data.getMostRecentNodeVisits));
 
     this.timeline = new window.vis.Timeline(container, this.dataset, options);
     const currentTime = this.timeline.getCurrentTime();

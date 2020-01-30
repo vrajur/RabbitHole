@@ -9,6 +9,14 @@
   max-width: 250px;
 }
 
+.node-url-td {
+  max-width: 250px;
+}
+
+.node-url-td:hover {
+  max-width: none;
+}
+
 .vis-item.vis-point:hover {
   width: auto;
   max-width: none;
@@ -36,11 +44,13 @@
 }
 
 .node-link {
-  width: inherit;
-  display: block;
+  width: -moz-available;
+  width: -webkit-fill-available;
+  display: inline-block;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  padding-left: 10px;
 }
 
 .node-link:hover {
