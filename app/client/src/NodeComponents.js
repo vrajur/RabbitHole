@@ -40,6 +40,7 @@ const getMostRecentNodeVisitResultsQuery = gql`query {
     }
     nodeVisit {
       timestamp
+      domCache
       faviconPath
     }
   }
@@ -134,12 +135,54 @@ export class NodeGraph extends React.Component {
 }
 
 
+export class NodeInfoBox extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.getContent = this.getContent.bind(this);
+  }
+
+  getContent() {
+    const content = {
+      _html: `<p>"nothing yet"</p>`
+    }
+
+    if (this.props.node) {
+      content._html = unescape(this.props.node.nodeVisit.domCache);
+    }
+
+    return content;
+  }
+
+  componentDidUpdate(prevProp, prevState) {
+    let content;
+    if (this.props.node) {
+      content = unescape(this.props.node.nodeVisit.domCache);
+      this.refs.main.style.display = 'block';
+    } else {
+      content = `<html><head></head><body><p>"nothing to show"</p></body></html>`;
+      this.refs.main.style.display = 'none';
+    }
+    this.refs.main.contentDocument.children[0].innerHTML = content;
+  }
+
+
+  render() {
+
+    return (
+      <iframe id='node-info-box' ref='main' /> 
+    );
+  }
+}
+
+
 export class NodeVisTimeline extends React.Component {
 
 
   constructor(props) {
     super(props);
-    this.state = {nodes: []};
+    this.state = {nodes: [], selectedNode: null};
     this.updateNodes = this.updateNodes.bind(this);
     this.timeline = null;
     this.dataset = null;
@@ -278,6 +321,11 @@ export class NodeVisTimeline extends React.Component {
       const tableElement = document.getElementById("current-timeline-time-val");
       tableElement.innerHTML = this.timeline.getCurrentTime();
     });
+    this.timeline.on('select', ({ items, event }) => {
+      this.setState({
+        selectedNode: this.state.nodes[items[items.length-1]-1]
+      });
+    });
 
     window.addEventListener("keydown", (e) => {
       if (e.key == "ArrowRight" || e.key == "ArrowLeft") {
@@ -318,21 +366,22 @@ export class NodeVisTimeline extends React.Component {
     return (
       <>
         <button id='toggle-hide-unselected'> Toggle Hide Unselected </button>
+        <NodeInfoBox node={this.state.selectedNode}/>
         <div id="vis-timeline" />
         <div id="timeline-info">
           <table id='timeline-info-table'>
             <tbody>
               <tr>
-               <td colspan='2'> <b>Current Time</b> </td>
-               <td id="current-timeline-time-val" colspan='2'/> 
+               <td colSpan='2'> <b>Current Time</b> </td>
+               <td id="current-timeline-time-val" colSpan='2'/> 
               </tr>
               <tr>
-               <td colspan='2'> <b>Window Start Time</b> </td>
-               <td id="window-start" colspan='2' /> 
+               <td colSpan='2'> <b>Window Start Time</b> </td>
+               <td id="window-start" colSpan='2' /> 
               </tr>
               <tr>
-               <td colspan='2'> <b>Window End Time</b> </td>
-               <td id="window-end" colspan='2' /> 
+               <td colSpan='2'> <b>Window End Time</b> </td>
+               <td id="window-end" colSpan='2' /> 
               </tr>
               <tr> 
                 <td> <b>Nodes Visible</b> </td>

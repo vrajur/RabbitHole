@@ -4,10 +4,35 @@ const div = document.createElement('div');
 div.id = "rh-content-overlay";
 document.body.prepend(div);
 
+
+function appendDomCache(domCache) {
+	let domDiv = document.getElementById('dom-div')
+	if (!domDiv) {
+		domDiv = document.createElement('div');
+		domDiv.id = 'dom-div';
+		document.body.prepend(domDiv);
+	} 
+
+	if (domDiv.children.length > 0) {
+		return;
+	}
+
+	// domCache.querySelector("#dom-div").remove();
+	debugger;
+	domString = domCache.querySelector('body').innerHTML.toString();
+	// domDiv.appendChild(domCache);
+	let template = document.createElement('div');
+	template.innerHTML = unescape(escape(domString))
+	domDiv.appendChild(template);
+}
+
 function getDomCache() {
 	domCache = document.getElementsByTagName('html')[0].cloneNode(true);
 	domCache.querySelector("#rh-content-overlay").remove();
 	domString = domCache.innerHTML.toString();
+
+	// appendDomCache(domCache); // For testing purposes
+
 	return domString;
 }
 

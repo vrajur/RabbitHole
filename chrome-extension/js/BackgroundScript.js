@@ -54,7 +54,7 @@ const sendRuntimeMessage = {
 			console.log("domCache: ", data.domCache);
 			console.log("faviconPath: ", data.faviconPath);
 			await tabManager._currentNode.currentNodeVisit.setFaviconPath(data.faviconPath);
-			// await tabManager._currentNode.currentNodeVisit.setDomCache(data.domCache);
+			await tabManager._currentNode.currentNodeVisit.setDomCache(data.domCache);
 		});
 	},
 	sendIsStarred: (tabId, data) => {
