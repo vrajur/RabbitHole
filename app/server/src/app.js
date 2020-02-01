@@ -29,6 +29,9 @@ const resolvers = {
     getMostRecentNodes: async (_, { n }, { dataSources }) => {
       return dataSources.pgAPI.getMostRecentNodes(n);
     },
+    getMostRecentNodeVisits: async (_, { n }, { dataSources }) => {
+      return dataSources.pgAPI.getMostRecentNodeVisits(n);
+    },
     getLastNodeVisitId: (_, { nodeId }, { dataSources }) => {
       return dataSources.pgAPI.getLastNodeVisitId({nodeId: nodeId});
     }, 
@@ -54,6 +57,12 @@ const resolvers = {
     }, 
     addNodeVisitToNode: (_, { nodeId, nodeVisitId }, { dataSources }) => {
       return dataSources.pgAPI.addNodeVisitToNode({nodeId: nodeId , nodeVisitId: nodeVisitId });
+    },
+    addDomCache: (_, { nodeVisitId, domCache }, { dataSources }) => {
+      return dataSources.pgAPI.addDomCache({nodeVisitId: nodeVisitId, domCache: domCache});
+    },
+    addFaviconPath: (_, { nodeVisitId, faviconPath }, { dataSources }) => {
+      return dataSources.pgAPI.addFaviconPath({nodeVisitId: nodeVisitId, faviconPath: faviconPath});
     }
   },
   NodeUnion: {

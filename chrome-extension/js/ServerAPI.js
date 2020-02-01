@@ -192,7 +192,7 @@ export class ServerAPI {
 			}`
 		}
 
-		// Get query results from sever:
+		// Get query results from server:
 		const queryResult = (await ServerAPI.sendRequest(body)).data.addNodeVisitToNode;
 
 		// Populate node visit data using query results
@@ -203,6 +203,56 @@ export class ServerAPI {
 		} : null;
 
 		return nodeData;
+	}
+
+	static async addDomCache(nodeVisitId, domCache) {
+
+		if (!nodeVisitId ) { console.log('Invalid nodeVisitId: ', nodeVisitId); return null; }
+
+		const body = {
+			query: 	`mutation {
+				addDomCache(nodeVisitId: "${nodeVisitId}", domCache: "${escape(domCache)}") {
+					id
+					domCache
+				}
+			}`
+		};
+
+		// Get query results from server:
+		const queryResult = (await ServerAPI.sendRequest(body)).data.addDomCache;
+
+		// Store results:
+		const nodeVisitData = queryResult ? {
+			nodeVisitId: queryResult.id,
+			domCache: queryResult.domCache
+		} : null;
+
+		return nodeVisitData;
+	}
+
+	static async addFaviconPath(nodeVisitId, faviconPath) {
+
+		if (!nodeVisitId ) { console.log('Invalid nodeVisitId: ', nodeVisitId); return null; }
+
+		const body = {
+			query: 	`mutation {
+				addFaviconPath(nodeVisitId: "${nodeVisitId}", faviconPath: "${faviconPath}") {
+					id
+					faviconPath
+				}
+			}`
+		};
+
+		// Get query results from server:
+		const queryResult = (await ServerAPI.sendRequest(body)).data.addFaviconPath;
+
+		// Store results:
+		const nodeVisitData = queryResult ? {
+			nodeVisitId: queryResult.id,
+			faviconPath: queryResult.faviconPath
+		} : null;
+
+		return nodeVisitData;
 	}
 
 	//DEPRECATED

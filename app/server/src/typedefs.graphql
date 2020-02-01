@@ -72,11 +72,16 @@ type SearchNode implements BaseNode {
 
 union NodeUnion = Node | SearchNode
 
+type NodeVisitResult {
+	nodeVisit: NodeVisit
+	node: Node
+}
 
 type Query {
 	hello: String
 	getAllNodes: [Node]
 	getMostRecentNodes(n: Int): [Node]
+	getMostRecentNodeVisits(n: Int): [NodeVisitResult]
 	getLastNodeVisitId(nodeId: String): String
 	getNodeVisit(nodeVisitId: String): NodeVisit
 }
@@ -87,4 +92,6 @@ type Mutation {
 	addNodeVisit(nodeId: String): NodeVisit
 	addNodeVisitToNode(nodeId: String, nodeVisitId: String): Node
 	setNodeIsStarredValue(nodeId: String, isStarredValue: Boolean) : Node 
+	addDomCache(nodeVisitId: String, domCache: String) : NodeVisit
+	addFaviconPath(nodeVisitId: String, faviconPath: String) : NodeVisit
 }

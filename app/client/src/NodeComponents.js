@@ -31,6 +31,22 @@ const getMostRecentNodesQuery = gql`query {
   }
 }`;
 
+const getMostRecentNodeVisitResultsQuery = gql`query {
+  getMostRecentNodeVisits(n: 200) {
+    node {
+      id
+      url
+      isStarred
+    }
+    nodeVisit {
+      timestamp
+      domCache
+      faviconPath
+    }
+  }
+}
+`;
+
 export class NodeList extends React.Component {
 
   render() {
@@ -119,21 +135,63 @@ export class NodeGraph extends React.Component {
 }
 
 
+export class NodeInfoBox extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.getContent = this.getContent.bind(this);
+  }
+
+  getContent() {
+    const content = {
+      _html: `<p>"nothing yet"</p>`
+    }
+
+    if (this.props.node) {
+      content._html = unescape(this.props.node.nodeVisit.domCache);
+    }
+
+    return content;
+  }
+
+  componentDidUpdate(prevProp, prevState) {
+    let content;
+    if (this.props.node) {
+      content = unescape(this.props.node.nodeVisit.domCache);
+      this.refs.main.style.display = 'block';
+    } else {
+      content = `<html><head></head><body><p>"nothing to show"</p></body></html>`;
+      this.refs.main.style.display = 'none';
+    }
+    this.refs.main.contentDocument.children[0].innerHTML = content;
+  }
+
+
+  render() {
+
+    return (
+      <iframe id='node-info-box' ref='main' /> 
+    );
+  }
+}
+
+
 export class NodeVisTimeline extends React.Component {
 
 
   constructor(props) {
     super(props);
-    this.state = {nodes: []};
+    this.state = {nodes: [], selectedNode: null};
     this.updateNodes = this.updateNodes.bind(this);
     this.timeline = null;
     this.dataset = null;
     this.hideUnselected = false;
   }
 
-  updateNodes(nodeList) {
+  updateNodes(nodeVisitResultList) {
     this.setState({
-      nodes: nodeList,
+      nodes: nodeVisitResultList,
     });
 
     let items = [];
@@ -141,7 +199,7 @@ export class NodeVisTimeline extends React.Component {
     let maxId = this.timeline.itemsData.length > 0 ? this.timeline.itemsData.max('id').id : 0;
     let lastTimestamp = null;
     let groupId = 0;
-    for (let node of nodeList) {
+    for (let nodeVisitResult of nodeVisitResultList) {
       maxId += 1;
 
       // if ( lastTimestamp == null || Math.abs(node.timestamp - lastTimestamp) < 1000 ) {
@@ -151,8 +209,17 @@ export class NodeVisTimeline extends React.Component {
       // }
       groupId += 1;
 
-      items.push({id: maxId, title: node.timestamp, content: node.url, isStarred: node.isStarred, start: node.timestamp,  group: groupId});
-      lastTimestamp = node.timestamp;
+      items.push({
+        id: maxId, 
+        title: nodeVisitResult.nodeVisit.timestamp, 
+        content: nodeVisitResult.node.url, 
+        isStarred: nodeVisitResult.node.isStarred, 
+        faviconPath: nodeVisitResult.nodeVisit.faviconPath,
+        start: nodeVisitResult.nodeVisit.timestamp,  
+        group: groupId
+      });
+
+      lastTimestamp = nodeVisitResult.nodeVisit.timestamp;
     }
 
     this.timeline.itemsData.add(items);
@@ -209,11 +276,15 @@ export class NodeVisTimeline extends React.Component {
 
       template: (item, element, data) => {
         return ReactDOM.render(
-          <a  href={item.content} 
+          <div>
+            <img src={item.faviconPath} height='15' width='15' />
+            <a  href={item.content} 
               target="_blank"   
               className={item.isStarred ? "node-link starred-node" : "node-link"}>
               {item.content}
-          </a>, element);
+            </a>
+          </div>, 
+          element);
       },
 
       // timeAxis: {
@@ -223,7 +294,7 @@ export class NodeVisTimeline extends React.Component {
     };
 
     // Subscribe to node data:
-    this.props.client.query({query: getMostRecentNodesQuery}).then((res) => this.updateNodes(res.data.getMostRecentNodes));
+    this.props.client.query({query: getMostRecentNodeVisitResultsQuery}).then((res) => this.updateNodes(res.data.getMostRecentNodeVisits));
 
     this.timeline = new window.vis.Timeline(container, this.dataset, options);
     const currentTime = this.timeline.getCurrentTime();
@@ -249,6 +320,11 @@ export class NodeVisTimeline extends React.Component {
     this.timeline.on("currentTimeTick", () => {
       const tableElement = document.getElementById("current-timeline-time-val");
       tableElement.innerHTML = this.timeline.getCurrentTime();
+    });
+    this.timeline.on('select', ({ items, event }) => {
+      this.setState({
+        selectedNode: this.state.nodes[items[items.length-1]-1]
+      });
     });
 
     window.addEventListener("keydown", (e) => {
@@ -290,21 +366,22 @@ export class NodeVisTimeline extends React.Component {
     return (
       <>
         <button id='toggle-hide-unselected'> Toggle Hide Unselected </button>
+        <NodeInfoBox node={this.state.selectedNode}/>
         <div id="vis-timeline" />
         <div id="timeline-info">
           <table id='timeline-info-table'>
             <tbody>
               <tr>
-               <td colspan='2'> <b>Current Time</b> </td>
-               <td id="current-timeline-time-val" colspan='2'/> 
+               <td colSpan='2'> <b>Current Time</b> </td>
+               <td id="current-timeline-time-val" colSpan='2'/> 
               </tr>
               <tr>
-               <td colspan='2'> <b>Window Start Time</b> </td>
-               <td id="window-start" colspan='2' /> 
+               <td colSpan='2'> <b>Window Start Time</b> </td>
+               <td id="window-start" colSpan='2' /> 
               </tr>
               <tr>
-               <td colspan='2'> <b>Window End Time</b> </td>
-               <td id="window-end" colspan='2' /> 
+               <td colSpan='2'> <b>Window End Time</b> </td>
+               <td id="window-end" colSpan='2' /> 
               </tr>
               <tr> 
                 <td> <b>Nodes Visible</b> </td>

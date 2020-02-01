@@ -16,6 +16,11 @@ case "${1}"
 		PGUSER=postgres PGHOST=localhost PGPASSWORD=maddie17 PGDATABASE=Rabbithole-proto PGPORT=5432 node $DIR/app/server/src/app.js
 		;;
 
+	server-debug) 
+		cd $DIR/app/server
+		PGUSER=postgres PGHOST=localhost PGPASSWORD=maddie17 PGDATABASE=Rabbithole-proto PGPORT=5432 node --inspect-brk $DIR/app/server/src/app.js
+		;;
+
 	pgadmin) 
 		source ~/pgadmin4/bin/activate 
 		python3 ~/pgadmin4/lib/python3.7/site-packages/pgadmin4/pgAdmin4.py

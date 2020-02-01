@@ -23,6 +23,10 @@ class pgAPI extends DataSource {
 	constructor() {
 		super();
 		this.pool = new Pool();
+		this.tableOIDs = {
+			Node: null,
+			NodeVisits: null
+		};
 	}
 
 	nodeReducer(node) {
@@ -49,6 +53,30 @@ class pgAPI extends DataSource {
 		}
 	}
 
+	nodeVisitResultReducer(nodeVisitResult, nodeIdxs, nodeVisitIdxs) {
+
+		const node = {}; 
+		const nodeVisit = {};
+		const nIdxs = nodeIdxs.map((e) => {return e.idx});
+		const nvIdxs = nodeVisitIdxs.map((e) => {return e.idx});
+
+		// Split NodeVisitResults into node and nodeVisit objects:
+		for (let ii = 0, numElements = nodeVisitResult.length; ii < numElements; ii++) {
+			let nIdx = nIdxs.indexOf(ii);
+			let nvIdx = nvIdxs.indexOf(ii);
+			if (nIdx >= 0) {
+				node[nodeIdxs[nIdx].name] = nodeVisitResult[ii];
+			} else if (nvIdx >= 0) {
+				nodeVisit[nodeVisitIdxs[nvIdx].name] = nodeVisitResult[ii];
+			}
+		}
+
+		return {
+			node: this.nodeReducer(node),
+			nodeVisit: this.nodeVisitReducer(nodeVisit)
+		}
+	}
+
 	/**
     * This is a function that gets called by ApolloServer when being setup.
     * This function gets called with the datasource config including things
@@ -57,6 +85,11 @@ class pgAPI extends DataSource {
     */
 	initialize(config) {
 		this.context = config.context;
+	}
+
+	async getTableOID(tableName) {
+		let res = await this.pool.query(`SELECT oid FROM pg_class WHERE relname = '${tableName}' AND relkind = 'r';`);
+		return res.rows.length > 0 ? res.rows[0].oid : null;
 	}
 
 	async getAllNodes() {
@@ -69,6 +102,36 @@ class pgAPI extends DataSource {
 		return Array.isArray(res.rows) ? res.rows.map((node, idx, array) => this.nodeReducer(array[array.length-1-idx])) : [];
 	}
 
+	async getMostRecentNodeVisits( n ) {
+
+		// Get table OIDs for Nodes and NodeVisits table:
+		this.tableOIDs.Nodes = this.tableOIDs.Nodes == null ? await this.getTableOID('Nodes') : null;
+		this.tableOIDs.NodeVisits = this.tableOIDs.NodeVisits == null ? await this.getTableOID('NodeVisits') : null;
+
+		// Query returning row as array (to avoid column overlap)
+		const query = {
+			text: `SELECT nv.*, n.* FROM public."NodeVisits" as nv JOIN public."Nodes" AS n ON nv.node_id = n.node_id ORDER BY nv.timestamp DESC LIMIT $1`,
+			values: [n],
+			rowMode: 'array'
+		}
+		const res = await this.pool.query(query);
+		if ( res.rows.length <= 0 ) { return null; }
+		
+		// Determine fields belonging to node and nodeVisit
+		const nodeIdxs = [];
+		const nodeVisitIdxs = [];
+		for (let ii = 0; ii < res.fields.length; ii++) {
+			let f = res.fields[ii];
+			if (f.tableID == this.tableOIDs.Nodes) {
+				nodeIdxs.push({idx: ii, name: f.name});
+			} else if (f.tableID == this.tableOIDs.NodeVisits) {
+				nodeVisitIdxs.push({idx: ii, name: f.name});
+			}
+ 		}
+
+		return res.rows.map((nodeVisitResult, idx, array) => { return this.nodeVisitResultReducer(array[array.length-1-idx], nodeIdxs, nodeVisitIdxs) });
+	}
+
 	async addNode({ url }) {
 		console.log('addNode - url: ', url);
 		const res = await this.pool.query(`INSERT INTO "public"."Nodes" (node_id, url, is_starred, visits, timestamp) VALUES (uuid_generate_v4(), '${url}', FALSE, array[]::uuid[], NOW()) RETURNING *`);
@@ -79,7 +142,7 @@ class pgAPI extends DataSource {
 		// Strip http and https from beginning of url
 		const cleanedUrl = url.replace(/^(https:\/\/|http:\/\/)/, '');
 		console.log('cleaned url: ', cleanedUrl);
-		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url LIKE '%${cleanedUrl}'`);
+		const res = await this.pool.query(`SELECT * FROM "public"."Nodes" WHERE url ~ '(^|http://|https://)${cleanedUrl}'`);
 		console.log('result rowcount: ', res.rowCount);
 		return res.rows.length === 0 ? await this.addNode({url: url}) : this.nodeReducer(res.rows[0]); // Add node if no result found, otherwise return result
 	}
@@ -113,6 +176,16 @@ class pgAPI extends DataSource {
 		const res1 = await this.pool.query(`UPDATE public."Nodes" SET visits = array_append(visits, $1	) WHERE node_id = $2 RETURNING *`, [nodeVisitId, nodeId]);
 		const res2 = await this.pool.query(`UPDATE public."NodeVisits" SET node_id = $1 WHERE node_visit_id = $2`, [nodeId, nodeVisitId]);
 		return res1.rows.length > 0 ? this.nodeReducer(res1.rows[0]) : null;
+	}
+
+	async addDomCache({ nodeVisitId, domCache }) {
+		const res = await this.pool.query(`UPDATE public."NodeVisits" SET dom_cache = $1 WHERE node_visit_id = $2 RETURNING *`, [domCache, nodeVisitId]);
+		return res.rows.length > 0 ? this.nodeVisitReducer(res.rows[0]) : null;
+	}
+
+	async addFaviconPath({ nodeVisitId, faviconPath }) {
+		const res = await this.pool.query(`UPDATE public."NodeVisits" SET favicon_path = $1 WHERE node_visit_id = $2 RETURNING *`, [faviconPath, nodeVisitId]);
+		return res.rows.length > 0 ? this.nodeVisitReducer(res.rows[0]) : null;
 	}
 }
 
