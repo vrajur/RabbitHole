@@ -82,6 +82,7 @@ type Query {
 	getAllNodes: [Node]
 	getMostRecentNodes(n: Int): [Node]
 	getMostRecentNodeVisits(n: Int): [NodeVisitResult]
+	getMostRecentNodeVisitsNonBlacklisted(n: Int): [NodeVisitResult]
 	getLastNodeVisitId(nodeId: String): String
 	getNodeVisit(nodeVisitId: String): NodeVisit
 }

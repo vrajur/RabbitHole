@@ -1,4 +1,8 @@
 const { ApolloServer, gql } = require('apollo-server');
+const bodyParser = require('body-parser');
+const { graphqlExpress } = require('apollo-server-express');
+
+
 const fs = require('fs');
 
 // The GraphQL schema
