@@ -40,13 +40,10 @@ const resolvers = {
     hello: async (parent, args, context, info) => {
     	return "world";
     },
-    // getAllNodes: async (_, __, { dataSources }) => {
-    //   return dataSources.pgAPI.getAllNodes();
-    // },
+    getAllNodes: async (_, __, { dataSources }) => {
+      return dataSources.pgAPI.getAllNodes();
+    },
     getMostRecentNodes: async (_, { n }, { dataSources, user }) => {
-
-      // console.log("user", user);
-
       try {
         const email = await user; // catching the reject from the user promise
         return dataSources.pgAPI.getMostRecentNodes(n);
@@ -57,38 +54,38 @@ const resolvers = {
     getMostRecentNodeVisits: async (_, { n }, { dataSources }) => {
       return dataSources.pgAPI.getMostRecentNodeVisits(n);
     },
-    // getLastNodeVisitId: (_, { nodeId }, { dataSources }) => {
-    //   return dataSources.pgAPI.getLastNodeVisitId({nodeId: nodeId});
-    // }, 
-    // getNodeVisit: (_, { nodeVisitId }, { dataSources }) => {
-    //   return dataSources.pgAPI.getNodeVisit({nodeVisitId: nodeVisitId});
-    // }
+    getLastNodeVisitId: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.getLastNodeVisitId({nodeId: nodeId});
+    }, 
+    getNodeVisit: (_, { nodeVisitId }, { dataSources }) => {
+      return dataSources.pgAPI.getNodeVisit({nodeVisitId: nodeVisitId});
+    }
   },
   Mutation: {
-    // addNode: (_, { url }, { dataSources }) => {
-    //   return dataSources.pgAPI.addNode({url: url});
-    // }, 
-    // getOrCreateNode: (_, { url }, { dataSources }) => {
-    //   return dataSources.pgAPI.getOrCreateNode({url: url});
-    // },
-    // setNodeIsStarredValue: (_, { nodeId, isStarredValue }, { dataSources }) => {
-    //   return dataSources.pgAPI.setNodeIsStarredValue({ nodeId: nodeId, isStarredValue: isStarredValue });
-    // },
-    // addNodeVisit: (_, { nodeId }, { dataSources }) => {
-    //   return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId});
-    // }, 
-    // addNodeVisit: (_, { nodeId }, { dataSources }) => {
-    //   return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId });
-    // }, 
-    // addNodeVisitToNode: (_, { nodeId, nodeVisitId }, { dataSources }) => {
-    //   return dataSources.pgAPI.addNodeVisitToNode({nodeId: nodeId , nodeVisitId: nodeVisitId });
-    // },
-    // addDomCache: (_, { nodeVisitId, domCache }, { dataSources }) => {
-    //   return dataSources.pgAPI.addDomCache({nodeVisitId: nodeVisitId, domCache: domCache});
-    // },
-    // addFaviconPath: (_, { nodeVisitId, faviconPath }, { dataSources }) => {
-    //   return dataSources.pgAPI.addFaviconPath({nodeVisitId: nodeVisitId, faviconPath: faviconPath});
-    // }
+    addNode: (_, { url }, { dataSources }) => {
+      return dataSources.pgAPI.addNode({url: url});
+    }, 
+    getOrCreateNode: (_, { url }, { dataSources }) => {
+      return dataSources.pgAPI.getOrCreateNode({url: url});
+    },
+    setNodeIsStarredValue: (_, { nodeId, isStarredValue }, { dataSources }) => {
+      return dataSources.pgAPI.setNodeIsStarredValue({ nodeId: nodeId, isStarredValue: isStarredValue });
+    },
+    addNodeVisit: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId});
+    }, 
+    addNodeVisit: (_, { nodeId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisit({ nodeId: nodeId });
+    }, 
+    addNodeVisitToNode: (_, { nodeId, nodeVisitId }, { dataSources }) => {
+      return dataSources.pgAPI.addNodeVisitToNode({nodeId: nodeId , nodeVisitId: nodeVisitId });
+    },
+    addDomCache: (_, { nodeVisitId, domCache }, { dataSources }) => {
+      return dataSources.pgAPI.addDomCache({nodeVisitId: nodeVisitId, domCache: domCache});
+    },
+    addFaviconPath: (_, { nodeVisitId, faviconPath }, { dataSources }) => {
+      return dataSources.pgAPI.addFaviconPath({nodeVisitId: nodeVisitId, faviconPath: faviconPath});
+    }
   },
   NodeUnion: {
     __resolveType(obj, context, info){
